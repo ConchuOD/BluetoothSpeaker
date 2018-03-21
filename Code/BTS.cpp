@@ -156,6 +156,7 @@ void main(void){
         songArtist = RN52_Serial3.artist();    
         songNumber = RN52_Serial3.trackNumber();
         songDuration = RN52_Serial3.trackDuration();
+        /** add protection case for this stuff? **/
         #ifdef DEBUG
         Serial.print("Title: ");
         Serial.println(songTitle);
@@ -175,6 +176,7 @@ void main(void){
         #endif
         #ifdef DISPLAY
         /* Using the metadata information we can now update the text on the screen. */
+        /** write a bacl rect over test that is to be updated **/
         tft.setCursor(64,4);
         tft.print(songTitle);
         tft.setCursor(64,48);
