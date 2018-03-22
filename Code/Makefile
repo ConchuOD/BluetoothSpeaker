@@ -119,7 +119,11 @@ OBJCOPY = $(COMPILERPATH)/arm-none-eabi-objcopy
 SIZE = $(COMPILERPATH)/arm-none-eabi-size
 
 # automatically create lists of the sources and objects
-# TODO: this does not handle Arduino libraries yet...
+# TODO: create a folder with Teensy core libs & add to gitignore
+#       add a section to include Teensy core libs
+#       add a section to include Teensy style libs
+#       add a section to include Arduino style libs
+
 C_FILES := $(wildcard *.c)
 CPP_FILES := $(wildcard *.cpp)
 OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
