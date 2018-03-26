@@ -12179,6 +12179,11 @@ This footprint was designed to help hold the alignment of a through-hole compone
 </polygon>
 <smd name="6" x="0.0254" y="-7.6581" dx="1.143" dy="3.302" layer="1" rot="R180"/>
 </package>
+<package name="HOBBYKING_XT-60">
+<description>HobbyKing XT-60 Format</description>
+<pad name="P$1" x="0" y="0" drill="4.5" shape="square"/>
+<pad name="P$2" x="7" y="0" drill="4.5"/>
+</package>
 </packages>
 <symbols>
 <symbol name="ADP2370">
@@ -12210,6 +12215,15 @@ This footprint was designed to help hold the alignment of a through-hole compone
 <pin name="VOUT" x="12.7" y="7.62" length="middle" rot="R180"/>
 <pin name="ADJ" x="12.7" y="0" length="middle" rot="R180"/>
 <pin name="TAB" x="12.7" y="-7.62" length="middle" rot="R180"/>
+</symbol>
+<symbol name="XT-60">
+<description>XT-60 Connector</description>
+<pin name="POS" x="7.62" y="0" length="middle" rot="R180"/>
+<pin name="NEG" x="7.62" y="5.08" length="middle" rot="R180"/>
+<wire x1="-10.16" y1="7.62" x2="2.54" y2="7.62" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="7.62" x2="2.54" y2="-2.54" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="-2.54" x2="-10.16" y2="-2.54" width="0.1524" layer="94"/>
+<wire x1="-10.16" y1="-2.54" x2="-10.16" y2="7.62" width="0.1524" layer="94"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -12249,6 +12263,22 @@ This footprint was designed to help hold the alignment of a through-hole compone
 <connect gate="G$1" pin="TAB" pad="3"/>
 <connect gate="G$1" pin="VIN" pad="2"/>
 <connect gate="G$1" pin="VOUT" pad="4"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="HK_XT-60">
+<gates>
+<gate name="G$1" symbol="XT-60" x="5.08" y="-2.54"/>
+</gates>
+<devices>
+<device name="" package="HOBBYKING_XT-60">
+<connects>
+<connect gate="G$1" pin="NEG" pad="P$1"/>
+<connect gate="G$1" pin="POS" pad="P$2"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -17133,6 +17163,7 @@ Source: &lt;a href="http://cdn.sparkfun.com/datasheets/Prototyping/xt60.pdf"&gt;
 <part name="J4" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:513" deviceset="CONN_14" device="" package3d_urn="urn:adsk.eagle:package:38183/1"/>
 <part name="R16" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:26057/1" value="100R"/>
 <part name="GND12" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="U$1" library="myLib" deviceset="HK_XT-60" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -17227,6 +17258,7 @@ Source: &lt;a href="http://cdn.sparkfun.com/datasheets/Prototyping/xt60.pdf"&gt;
 <instance part="J4" gate="G$1" x="139.7" y="228.6"/>
 <instance part="R16" gate="G$1" x="132.08" y="235.204" rot="R90"/>
 <instance part="GND12" gate="1" x="172.72" y="237.236"/>
+<instance part="U$1" gate="G$1" x="195.58" y="198.12"/>
 </instances>
 <busses>
 </busses>
@@ -17410,6 +17442,11 @@ Source: &lt;a href="http://cdn.sparkfun.com/datasheets/Prototyping/xt60.pdf"&gt;
 <pinref part="GND11" gate="1" pin="GND"/>
 <wire x1="218.44" y1="187.96" x2="220.98" y2="187.96" width="0.1524" layer="91"/>
 <wire x1="220.98" y1="187.96" x2="220.98" y2="186.436" width="0.1524" layer="91"/>
+<pinref part="U$1" gate="G$1" pin="NEG"/>
+<wire x1="203.2" y1="203.2" x2="226.06" y2="203.2" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="203.2" x2="226.06" y2="187.96" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="187.96" x2="220.98" y2="187.96" width="0.1524" layer="91"/>
+<junction x="220.98" y="187.96"/>
 </segment>
 <segment>
 <pinref part="T3_2" gate="G$1" pin="AGND"/>
@@ -18090,8 +18127,9 @@ Source: &lt;a href="http://cdn.sparkfun.com/datasheets/Prototyping/xt60.pdf"&gt;
 <junction x="276.86" y="182.88"/>
 <pinref part="C7" gate="G$1" pin="1"/>
 <wire x1="261.62" y1="187.96" x2="261.62" y2="190.5" width="0.1524" layer="91"/>
-<wire x1="218.44" y1="190.5" x2="231.14" y2="190.5" width="0.1524" layer="91"/>
+<wire x1="218.44" y1="190.5" x2="220.98" y2="190.5" width="0.1524" layer="91"/>
 <label x="220.98" y="190.5" size="1.778" layer="95"/>
+<wire x1="220.98" y1="190.5" x2="231.14" y2="190.5" width="0.1524" layer="91"/>
 <wire x1="231.14" y1="190.5" x2="261.62" y2="190.5" width="0.1524" layer="91"/>
 <wire x1="276.86" y1="190.5" x2="261.62" y2="190.5" width="0.1524" layer="91"/>
 <junction x="276.86" y="190.5"/>
@@ -18103,6 +18141,10 @@ Source: &lt;a href="http://cdn.sparkfun.com/datasheets/Prototyping/xt60.pdf"&gt;
 <wire x1="281.94" y1="205.74" x2="276.86" y2="205.74" width="0.1524" layer="91"/>
 <wire x1="276.86" y1="205.74" x2="276.86" y2="190.5" width="0.1524" layer="91"/>
 <pinref part="J7" gate="G$1" pin="POS"/>
+<wire x1="220.98" y1="190.5" x2="220.98" y2="198.12" width="0.1524" layer="91"/>
+<junction x="220.98" y="190.5"/>
+<pinref part="U$1" gate="G$1" pin="POS"/>
+<wire x1="220.98" y1="198.12" x2="203.2" y2="198.12" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="PWRGOOD" class="0">
