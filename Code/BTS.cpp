@@ -32,7 +32,7 @@
 ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MISO);
 #endif
 
-/* Function definitions */
+/* Function delarations */
 void shutdown(void); //write this function
 
 /** Finish Metadata related AT commands in HWSerial before using **/
