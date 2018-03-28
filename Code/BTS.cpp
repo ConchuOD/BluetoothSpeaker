@@ -1,14 +1,15 @@
 /* Optional code segments */
 #DEFINE DEBUG 1
 #DEFINE DISPLAY 1
+#DEFINE HC05 1
 
-/* Needed libraries */
+/* Requried libraries */
 #include "RN52_HardwareSerial.h"
 #include "HardwareSerial.h"
 #include "ILI9341_t3.h"
 #include "font_DroidSansMono.h"
 
-/* Libraries that might be needed? */
+/* Libraries that may be needed */
 //TODO - Figure out required headers (check arduino programmer code)
 #include "SPI.h"
 
@@ -23,38 +24,57 @@
 #define RN52_BAUD_RATE 115200
 #define BUTTON_HEIGHT 60
 #define BUTTON_WIDTH 64
+#define METADATA_RESET 10000
+#define GPIO2_PIN 17
+#define PIN_SHUTDOWN 2
 
 /* Globals */
 #ifdef DISPLAY
 ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MISO);
-#endfi
+#endif
 
+/* Function definitions */
+void shutdown(void); //write this function
+
+/** Finish Metadata related AT commands in HWSerial before using **/
 void main(void){
     /* Variables */
+    #ifdef DEBUG
+    int timer = 0;
+    #endif
     char c, timeOut[13] = "00:00/00:00";
     char *s = &timeOut;
-    string songArtist, songAlbum, songTitle;
+    string songArtist = "n/a", songAlbum = "n/a", songTitle = "n/a";
     int songDuration, currentDuration, previousDuration = 0;    //songDuration is current a string in RN52_HWSerial
-    int startTime, currentTime;
-    int durationSeconds, durationMinutes;
-    int CurrentSeconds, CurrentMinutes;
+    int startTime = 0, elapsedTime = 0, timeAtPause = 0;
+    int durationSeconds = 0, durationMinutes = 0;
+    int elapsedSeconds = 0, elapsedMinutes = 0;
+    int eventRegStatus = 0;
+    /** Insert code to deal with flags in metadata handling (reset in particular) **/
+    bool newSongFlag = false, pausedFlag = false, previousPausedFlag = false, eventBit5Flag = false, GPIO2Status = true;
+    uint8_t pausedFlagArray = 0; /** Implement this without bools **/
     /* Setup code */
     sei();  //enable interupts
-    delay(1000);    //wait before setup
-    pinMode(PIN_A0, OUTPUT);
+    pinMode(PIN_A0, OUTPUT);    //pin for command mode
     digitalWrite(PIN_A0, HIGH);
+    pinMode(GPIO2_PIN, INPUT); //pin for event register
+    pinMode(PIN_SHUTDOWN, OUTPUT);  //pin for PA enable
+    digitalWrite(PIN_SHUTDOWN, LOW);
+    delay(1000);    //wait before setup
     #ifdef DEBUG
     Serial.begin(SERIAL_BAUD_RATE); //enable USB serial for tests
     while (!Serial){}
     Serial.println("Starting HC05 Serial");
     #endif
-    Serial2.begin(SERIAL_BAUD_RATE);    //enable HC05    
+    #ifdef HC05
+    Serial2.begin(SERIAL_BAUD_RATE);    //enable HC05
+    #endif
     #ifdef DEBUG
     Serial.println("Starting RN52 Serial");
     #endif
     RN52_Serial3.begin(RN52_BAUD_RATE); //enable RN52
     digitalWrite(PIN_A0, LOW);
-    while (RN52_Serial.available() == 0);   //wait for ACK (CMD\..., AOK\r\n or AOK\n\r - I forget which)
+    while (RN52_Serial.available() == 0);   //wait for ACK (CMD)
     c = RN52_Serial3.read();
     if (c == 'C') {
         delay(100);
@@ -80,6 +100,7 @@ void main(void){
     tft.fillRect(192,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_ORANGE);
     tft.fillRect(256,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_DARKCYAN);
     tft.setCursor(10,4);
+    /* Initialise the song display */
     tft.print(" Title:");
     tft.setCursor(10,48);
     tft.print("Artist:");
@@ -89,23 +110,30 @@ void main(void){
     tft.print("  Time:");
     delay(2000);
     tft.setCursor(64,4);
-    tft.print("n/a");
+    tft.print(songTitle);
     tft.setCursor(64,48);
-    tft.print("n/a");
+    tft.print(songArtist);
     tft.setCursor(64,92);
-    tft.print("n/a");
+    tft.print(songAlbum);
     tft.setCursor(64,136);
+    sprintf(s,"%2d:%2d/%2d:%2d", elapsedMinutes, elapsedSeconds, durationMinutes, durationSeconds);
     tft.print(timeOut);
     #endif
-    
+    digitalWrite(PIN_SHUTDOWN, HIGH); // turn on PA after setup complete
     /* Operational code */
     for(;;){
+        #ifdef DEBUG
+        delay(80);
+        timer = millis();
+        #endif
+        #ifdef HC05
         /* Check for HC05 commands */
         if(Serial2.available() != 0){
             c = Serial2.read();
             switch(c){
                 case c == ' ':
                     RN52_Serial3.playPause();    //pause
+                    pausedFlag = pausedFlag ? false : true; //toggle paused flag
                     #ifdef DEBUG
                     Serial.println("Paused.");
                     #endif
@@ -124,12 +152,16 @@ void main(void){
                     break;
                 case c == '>':
                     RN52_Serial3.nextTrack();    //skip
+                    newSongFlag = true;
+                    pausedFlag = false;
                     #ifdef DEBUG
                     Serial.println("Song skipped.");
                     #endif
                     break;
                 case c == '<':
                     RN52_Serial3.prevTrack();    //previous
+                    newSongFlag = true;
+                    pausedFlag = false;
                     #ifdef DEBUG
                     Serial.println("Song rewinded.");
                     #endif
@@ -140,51 +172,124 @@ void main(void){
                     #endif
             }   
         }
-        /* Now get metadata information */ 
-        /**
-            Can this be done in a more clever way (does it tell the current second of the song so that
-            it would be possible to only update the rest of the meta data if the song changes?
-            Otherwise run something where we only look for meta data on every millis()%100 or something.
-            That way we will not require delays which would probably make it feel like there is input lag.
-            
-            For current time in the song we might need to make an var that resets if the duration changes
-            and use millis to discover where in the song we are. I do not think that count is anything
-            other than the total number of tracks.
-        **/
-        songAlbum = RN52_Serial3.album();
-        songTitle = RN52_Serial3.title();     
-        songArtist = RN52_Serial3.artist();    
-        songNumber = RN52_Serial3.trackNumber();
-        songDuration = RN52_Serial3.trackDuration();
-        /** add protection case for this stuff? **/
+        #endif
+        /* Check bit 5 of the status register to see if there has been a new song */
+        GPIO2Status = digitalRead(GPIO2_PIN);
+        if(!GPIO2Status){
+            eventRegStatus = RN52_Serial3.queryState();
+            if(eventRegStatus & (1 << 5)){
+                newSongFlag = true;
+            }
+        }
         #ifdef DEBUG
+        Serial.print("eventRegStatus");
+        Serial.println(eventRegStatus & (1 << 5));
+        #endif
+        /** 
+            Do some maths here in an attempt to detect if a new song is possible, if it is set the newSongFlag.
+            Maybe: start time + elasped > duration.
+            On second thoughts, do I need this?
+        **/
+        /* Now get metadata information */
+        if(timeOut == "00:00/00:00" || millis()%METADATA_RESET == 0 || newSongFlag){  //runs on startup, every n seconds and on changes 
+            previousAlbum = songAlbum;  //save the old versions of the text so that we can wipe screen
+            songAlbum = RN52_Serial3.album();
+            previousTitle = songTitle;
+            songTitle = RN52_Serial3.title();  
+            previousArtist = songArtist;            
+            songArtist = RN52_Serial3.artist();
+            previousDuration = songDuration;         
+            songDuration = RN52_Serial3.trackDuration();
+            if(songTitle == "" || songArtist == ""){
+                newSongFlag = false; 
+                continue;  //if info is blank then we have no song playing.
+            }
+            else if (songDuration != previousDuration){
+                newSongFlag = true;
+            }
+        }
+        pausedFlag = newSongFlag ? false : true;    //reset paused flag if a new song is detected (default spotify behaviour).
+        #ifdef DEBUG
+        Serial.print("newSongFlag: ");
+        Serial.println(newSongFlag);
         Serial.print("Title: ");
         Serial.println(songTitle);
         #endif
-        if (songDuration != previousDuration){
+        /* Time update */
+        if(newSongFlag){
             startTime = millis();
         }
         durationSeconds = (songDuration/1000)%60;
         durationMinutes = (songDuration/1000)%3600;
-        currentTime = millis()-startTime();
-        currentSeconds = (currentTime/1000)%60;
-        currentMinutes = (currentTime/1000)%3600;
-        delay(100);  
-        sprintf(s,"%2d:%2d/%2d:%2d", currentMinutes, currentSeconds, durationMinutes, durationSeconds);
+        /* Account for the duration staying constant during a pause */
+        pausedFlagArray |= pausedFlag;
+        switch(pausedFlagArray){
+                case pausedFlagArray == 0:  //keep increasing elapsed time
+                    elapsedTime = millis() - startTime();
+                    break;                
+                case pausedFlagArray == 1:  //save the time it was paused at
+                    timeAtPause = millis();
+                    break;                
+                case pausedFlagArray == 2:  //compute new start time
+                    startTime = timeAtPause - elapsedTime;  //lol bodged
+                    break;                
+                case pausedFlagArray == 3:  //still paused
+                    break;
+                default:
+                    shutdown();
+                    #ifdef DEBUG
+                    Serial.println("Error");
+                    #endif
+            }
+        elapsedSeconds = (elapsedTime/1000)%60;
+        elapsedMinutes = (elapsedTime/1000)%3600;
+        #ifdef DISPLAY  
+        tft.setTextColor(ILI9341_BLACK);        
+        tft.setCursor(64,136);
+        tft.print(timeOut); //print the old time in black
+        tft.setTextColor(ILI9341_PINK);
+        #endif
+        sprintf(s,"%2d:%2d/%2d:%2d", elapsedMinutes, elapsedSeconds, durationMinutes, durationSeconds);
         #ifdef DEBUG
         Serial.println(timeOut);
         #endif
         #ifdef DISPLAY
-        /* Using the metadata information we can now update the text on the screen. */
-        /** write a bacl rect over test that is to be updated **/
-        tft.setCursor(64,4);
-        tft.print(songTitle);
-        tft.setCursor(64,48);
-        tft.print(songArtist);
-        tft.setCursor(64,92);
-        tft.print(songAlbum);
         tft.setCursor(64,136);
-        tft.print(timeOut);
+        tft.print(timeOut); //print the new time
+        /* Metadata Update */
+        if(newSongFlag){
+            tft.setTextColor(ILI9341_BLACK);
+            tft.setCursor(64,4);
+            tft.print(previousTitle);
+            tft.setCursor(64,48);
+            tft.print(previousArtist);
+            tft.setCursor(64,92);
+            tft.print(previousAlbum);            
+            tft.setTextColor(ILI9341_PINK);
+            tft.setCursor(64,4);
+            tft.print(songTitle);
+            tft.setCursor(64,48);
+            tft.print(songArtist);
+            tft.setCursor(64,92);
+            tft.print(songAlbum);
+            tft.setCursor(64,136);
+        }
         #endif
-    }      
+        pausedFlagArray = pausedFlag << 1; //update previously paused flag.
+        newSongFlag = false;    //reset new song flag
+        #ifdef DEBUG
+        print("Loop time: ")
+        println(millis - timer);
+        #endif
+    }
+    shutdown(); //if this is reached something really bad has happened.    
+}
+
+void shutdown(void){ // send exit cmd mode, do all shutdown stuff
+    digitalWrite(PIN_SHUTDOWN, LOW); //turn off the PA
+    #ifdef DEBUG
+    println("-----------------------")
+    println("Something bad happened.")
+    println("-----------------------")
+    #endif
 }

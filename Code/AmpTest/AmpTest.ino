@@ -9,7 +9,7 @@ void setup() {
     pinMode(PIN_A0, OUTPUT);
     pinMode(PIN_SHUTDOWN, OUTPUT);
     digitalWrite(PIN_A0, HIGH);
-    digitalWrite(PIN_A0, LOW);
+    digitalWrite(PIN_SHUTDOWN, LOW);
     Serial.begin(115200);
     while (!Serial){}
     Serial.println("Ready!");
