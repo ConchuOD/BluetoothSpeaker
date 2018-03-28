@@ -9,8 +9,7 @@
 #include "ILI9341_t3.h"
 #include "font_DroidSansMono.h"
 
-/* Libraries that may be needed */
-//TODO - Figure out required headers (check arduino programmer code)
+/* Libraries that may be needed */ /** TODO - Figure out required headers (check arduino programmer code) **/
 #include "SPI.h"
 
 /* Definitions */
@@ -208,7 +207,7 @@ void main(void){
                 newSongFlag = true;
             }
         }
-        pausedFlag = newSongFlag ? false : true;    //reset paused flag if a new song is detected (default spotify behaviour).
+        pausedFlag = newSongFlag ? false : pausedFlag;    //reset paused flag if a new song is detected (default spotify behaviour).
         #ifdef DEBUG
         Serial.print("newSongFlag: ");
         Serial.println(newSongFlag);
@@ -221,7 +220,7 @@ void main(void){
         }
         durationSeconds = (songDuration/1000)%60;
         durationMinutes = (songDuration/1000)%3600;
-        /* Account for the duration staying constant during a pause */
+        /* Account for the duration staying constant during a pause. Only for own pauses as AVRCP doesnt give pause data. */
         pausedFlagArray |= pausedFlag;
         switch(pausedFlagArray){
                 case pausedFlagArray == 0:  //keep increasing elapsed time
