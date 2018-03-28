@@ -4899,17 +4899,17 @@ einem neuen Namen ab.</description>
 <signal name="STATE">
 <contactref element="J6" pad="6"/>
 <contactref element="T3_2" pad="6"/>
-<wire x1="86.36" y1="2.54" x2="12.7" y2="2.54" width="0.4064" layer="1"/>
+<wire x1="21.59" y1="2.54" x2="86.36" y2="2.54" width="0.4064" layer="1"/>
 <wire x1="87.63" y1="8.89" x2="87.63" y2="3.81" width="0.4064" layer="1"/>
 <via x="87.63" y="8.89" extent="1-16" drill="0.35"/>
 <wire x1="87.63" y1="8.89" x2="87.63" y2="14.605" width="0.4064" layer="16"/>
 <via x="87.63" y="14.605" extent="1-16" drill="0.35"/>
-<wire x1="4.445" y1="10.795" x2="17.145" y2="52.07" width="0.4064" layer="1"/>
 <wire x1="87.63" y1="14.605" x2="87.63" y2="19.685" width="0.4064" layer="1"/>
 <wire x1="87.63" y1="19.685" x2="86.36" y2="20.955" width="0.4064" layer="1"/>
 <wire x1="86.36" y1="20.955" x2="85.09" y2="20.955" width="0.4064" layer="1"/>
-<wire x1="12.7" y1="2.54" x2="4.445" y2="10.795" width="0.4064" layer="1"/>
 <wire x1="86.36" y1="2.54" x2="87.63" y2="3.81" width="0.4064" layer="1"/>
+<wire x1="17.145" y1="52.07" x2="17.145" y2="6.985" width="0.4064" layer="1"/>
+<wire x1="17.145" y1="6.985" x2="21.59" y2="2.54" width="0.4064" layer="1"/>
 </signal>
 <signal name="EN">
 <contactref element="J6" pad="1"/>
