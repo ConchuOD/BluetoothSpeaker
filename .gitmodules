@@ -1,0 +1,6 @@
+[submodule "Code/RN52"]
+	path = Code/RN52
+	url = https://github.com/ConchuOD/RN52_HardwareSerial
+[submodule "Code/ILI9341_t3"]
+	path = Code/ILI9341_t3
+	url = https://github.com/PaulStoffregen/ILI9341_t3
