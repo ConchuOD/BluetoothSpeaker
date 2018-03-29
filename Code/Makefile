@@ -51,11 +51,10 @@ OPTIONS += -D__$(MCU)__ -DARDUINO=10805 -DTEENSYDUINO=141
 # use "cortex-m0plus" for Teensy LC
 #CPUARCH = cortex-m4
 #CPUARCH = cortex-m0plus
-COREPATH = /cores/teensy3
-TEENSY = 31
+COREPATH = cores/teensy3
 CPPFLAGS += -D__MK20DX256__ -mcpu=cortex-m4
-LDSCRIPT = $(COREPATH)/mk20dx256.ld
-LDFLAGS += -mcpu=cortex-m4 -T$(LDSCRIPT)
+LDSCRIPT = cores/teensy3/mk20dx256.ld
+LDFLAGS += -mcpu=cortex-m4 -T $(LDSCRIPT)
 
 
 # Other Makefiles and project templates for Teensy 3.x:
@@ -73,7 +72,8 @@ LDFLAGS += -mcpu=cortex-m4 -T$(LDSCRIPT)
 
 # Default to the normal GNU/Linux compiler path if NO_ARDUINO
 # and ARDUINOPATH was not set.
-COMPILERPATH ?= /home/conor/arduino-1.8.5/hardware/tools/arm/bin
+#COMPILERPATH ?= /home/conor/arduino-1.8.5/hardware/tools/arm/bin
+COMPILERPATH ?= /usr/bin/
 
 #************************************************************************
 # Settings below this point usually do not need to be edited
@@ -89,7 +89,7 @@ CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
 CFLAGS =
 
 # linker options
-LDFLAGS = -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 --specs=nano.specs -mthumb -T$(MCU_LD)
+LDFLAGS = -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 --specs=nano.specs -mthumb -T$(LDSCRIPT)
 
 # additional libraries to link
 LIBS = -lm
