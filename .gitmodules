@@ -7,3 +7,6 @@
 [submodule "Hardware/RN52_BOB"]
 	path = Hardware/RN52_BOB
 	url = https://github.com/ConchuOD/RN52_BOB
+[submodule "Code/cores"]
+	path = Code/cores
+	url = https://github.com/PaulStoffregen/cores

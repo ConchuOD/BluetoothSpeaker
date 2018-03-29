@@ -27,38 +27,35 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# set your MCU type here, or make command line `make MCU=MK20DX256`
-MCU=MK20DX256
-#MCU=MKL26Z64
-#MCU=MK64FX512
-#MCU=MK66FX1M0
-
-# make it lower case
-LOWER_MCU := $(subst A,a,$(subst B,b,$(subst C,c,$(subst D,d,$(subst E,e,$(subst F,f,$(subst G,g,$(subst H,h,$(subst I,i,$(subst J,j,$(subst K,k,$(subst L,l,$(subst M,m,$(subst N,n,$(subst O,o,$(subst P,p,$(subst Q,q,$(subst R,r,$(subst S,s,$(subst T,t,$(subst U,u,$(subst V,v,$(subst W,w,$(subst X,x,$(subst Y,y,$(subst Z,z,$(MCU)))))))))))))))))))))))))))
-MCU_LD = $(LOWER_MCU).ld
-
 # The name of your project (used to name the compiled .hex file)
-TARGET = main
+TARGET = BTS
+BUILDDIR = build
 
 # Those that specify a NO_ARDUINO environment variable will
 # be able to use this Makefile with no Arduino dependency.
 # Please note that if ARDUINOPATH was set, it will override
 # the NO_ARDUINO behaviour.
+NO_ARDUINO = 1
 ifndef NO_ARDUINO
 # Path to your arduino installation
 ARDUINOPATH ?= ../../../../..
 endif
 
 # configurable options
-OPTIONS = -DF_CPU=48000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
+OPTIONS = -DF_CPU=72000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
 
 # options needed by many Arduino libraries to configure for Teensy 3.x
 OPTIONS += -D__$(MCU)__ -DARDUINO=10805 -DTEENSYDUINO=141
 
 # use "cortex-m4" for Teensy 3.x
 # use "cortex-m0plus" for Teensy LC
-CPUARCH = cortex-m4
+#CPUARCH = cortex-m4
 #CPUARCH = cortex-m0plus
+COREPATH = /cores/teensy3
+TEENSY = 31
+CPPFLAGS += -D__MK20DX256__ -mcpu=cortex-m4
+LDSCRIPT = $(COREPATH)/mk20dx256.ld
+LDFLAGS += -mcpu=cortex-m4 -T$(LDSCRIPT)
 
 
 # Other Makefiles and project templates for Teensy 3.x:
@@ -74,30 +71,16 @@ CPUARCH = cortex-m4
 # locations and edit the pathnames.  The rest of Arduino is not needed.
 #************************************************************************
 
-ifdef ARDUINOPATH
-
-# path location for Teensy Loader, teensy_post_compile and teensy_reboot (on Linux)
-TOOLSPATH = $(abspath $(ARDUINOPATH)/hardware/tools)
-
-# path location for Arduino libraries (currently not used)
-LIBRARYPATH = $(abspath $(ARDUINOPATH)/libraries)
-
-# path location for the arm-none-eabi compiler
-COMPILERPATH = $(abspath $(ARDUINOPATH)/hardware/tools/arm/bin)
-
-else
 # Default to the normal GNU/Linux compiler path if NO_ARDUINO
 # and ARDUINOPATH was not set.
-COMPILERPATH ?= /usr/bin
-
-endif
+COMPILERPATH ?= /home/conor/arduino-1.8.5/hardware/tools/arm/bin
 
 #************************************************************************
 # Settings below this point usually do not need to be edited
 #************************************************************************
 
 # CPPFLAGS = compiler options for C and C++
-CPPFLAGS = -Wall -g -Os -mcpu=$(CPUARCH) -mthumb -MMD $(OPTIONS) -I.
+CPPFLAGS = -Wall -g -Os -mthumb -MMD $(OPTIONS) -I.
 
 # compiler options for C++ only
 CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
@@ -106,11 +89,10 @@ CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
 CFLAGS =
 
 # linker options
-LDFLAGS = -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 --specs=nano.specs -mcpu=$(CPUARCH) -mthumb -T$(MCU_LD)
+LDFLAGS = -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 --specs=nano.specs -mthumb -T$(MCU_LD)
 
 # additional libraries to link
 LIBS = -lm
-
 
 # names for the compiler programs
 CC = $(COMPILERPATH)/arm-none-eabi-gcc
@@ -119,33 +101,62 @@ OBJCOPY = $(COMPILERPATH)/arm-none-eabi-objcopy
 SIZE = $(COMPILERPATH)/arm-none-eabi-size
 
 # automatically create lists of the sources and objects
-# TODO: create a folder with Teensy core libs & add to gitignore
-#       add a section to include Teensy core libs
-#       add a section to include Teensy style libs
-#       add a section to include Arduino style libs
 
-C_FILES := $(wildcard *.c)
-CPP_FILES := $(wildcard *.cpp)
-OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
+# adding teensy cores for T3.2
+CPP_FILES += $(filter-out COREPATH/main.cpp, $(wildcard COREPATH*.cpp))
+C_FILES += $(wildcard COREPATH*.c)
 
+# add RN52 lib and ILI lib
+EXTRALIBS = ILI9341_t3 SPI RN52 text
+CPP_FILES += $(foreach lib, $(EXTRALIBS), $(wildcard /$(lib)/*.cpp))
+C_FILES += $(foreach lib, $(EXTRALIBS), $(wildcard /$(lib)/*.c))
 
-# the actual makefile rules (all .o files built by GNU make's default implicit rules)
+# add obj names
+OBJSFILES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
+OBJS := $(foreach obj,$(OBJS_FILES), $(BUILDDIR)/$(obj))
 
-all: $(TARGET).hex
+all: hex
 
-$(TARGET).elf: $(OBJS) $(MCU_LD)
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+build: $(TARGET).elf
+
+hex: $(TARGET).hex
+
+post_compile: $(TARGET).hex
+	$(Q)$(TOOLS_PATH)/teensy_post_compile -file="$(basename $<)" -path="$(call cygpath-win,$(CURDIR))" -tools="$(TOOLS_PATH)"
+
+reboot:
+	$(Q)-$(TOOLS_PATH)/teensy_reboot
+
+upload: post_compile reboot
+
+$(BUILDDIR)/%.o: %.c
+	@echo "[CC]\t$<"
+	$(Q)mkdir -p "$(dir $@)"
+	$(Q)$(CC) $(CPPFLAGS) $(CFLAGS) $(L_INC) -o "$@" -c "$<"
+
+$(BUILDDIR)/%.o: %.ino
+	@echo "[CXX]\t$<"
+	$(Q)mkdir -p "$(dir $@)"
+	$(Q)$(CC) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -c -x c++ -include Arduino.h "$<"
+
+$(BUILDDIR)/%.o: %.cpp
+	@echo "[CXX]\t$<"
+	@mkdir -p "$(dir $@)"
+	$(Q)$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -c "$<"
+
+$(TARGET).elf: $(OBJS) $(LDSCRIPT)
+	@echo "[LD]\t$@"
+	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(TARGET).map $(OBJS) $(LIBS)
 
 %.hex: %.elf
-	$(SIZE) $<
-	$(OBJCOPY) -O ihex -R .eeprom $< $@
-ifneq (,$(wildcard $(TOOLSPATH)))
-	$(TOOLSPATH)/teensy_post_compile -file=$(basename $@) -path=$(shell pwd) -tools=$(TOOLSPATH)
-	-$(TOOLSPATH)/teensy_reboot
-endif
+	@echo "[HEX]\t$@"
+	$(Q)$(SIZE) "$<"
+	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
 # compiler generated dependency info
 -include $(OBJS:.o=.d)
 
 clean:
-	rm -f *.o *.d $(TARGET).elf $(TARGET).hex
+	@echo Cleaning...
+	$(Q)rm -rf "$(BUILDDIR)"
+	$(Q)rm -f "$(TARGET).elf" "$(TARGET).hex" "$(TARGET).map"
