@@ -2,13 +2,16 @@
 *.zip
 *.svg
 
+# Executables
+*exe*
+
 # Excel Backup
 ~$*.*
 
 # Entire Folders
 /Code/CMakeFiles/
-/Code/ILI9341_t3/
-/Code/RN52/
+#/Code/ILI9341_t3/
+#/Code/RN52
 /Code/CMakeCache.txt
 /CAM/
 
