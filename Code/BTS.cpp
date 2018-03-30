@@ -1,4 +1,4 @@
-/* Optional code segments */
+/* Optional code segments - using this to seperately test code segments */
 #DEFINE DEBUG 1
 #DEFINE DISPLAY 1
 #DEFINE HC05 1
@@ -209,14 +209,18 @@ void main(void){
         }
         pausedFlag = newSongFlag ? false : pausedFlag;    //reset paused flag if a new song is detected (default spotify behaviour).
         #ifdef DEBUG
-        Serial.print("newSongFlag: ");
-        Serial.println(newSongFlag);
-        Serial.print("Title: ");
-        Serial.println(songTitle);
+        if(newSongFlag){           
+            Serial.print("Title: ");
+            Serial.println(songTitle);
+        }
         #endif
         /* Time update */
         if(newSongFlag){
             startTime = millis();
+            #ifdef DEBUG          
+            Serial.print("Title: ");
+            Serial.println(songTitle);
+            #endif
         }
         durationSeconds = (songDuration/1000)%60;
         durationMinutes = (songDuration/1000)%3600;
@@ -248,9 +252,12 @@ void main(void){
         tft.print(timeOut); //print the old time in black
         tft.setTextColor(ILI9341_PINK);
         #endif
+        previousTimeOut = timeOut;
         sprintf(s,"%2d:%2d/%2d:%2d", elapsedMinutes, elapsedSeconds, durationMinutes, durationSeconds);
         #ifdef DEBUG
-        Serial.println(timeOut);
+        if(timeOut != previousTimeOut){
+            Serial.println(timeOut);
+        }
         #endif
         #ifdef DISPLAY
         tft.setCursor(64,136);

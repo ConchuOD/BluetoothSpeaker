@@ -2,6 +2,8 @@
 # http://www.pjrc.com/teensy/
 # Copyright (c) 2017 PJRC.COM, LLC.
 #
+# Modified for BTS 2018.
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -27,19 +29,9 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# The name of your project (used to name the compiled .hex file)
+# the name of the project
 TARGET = BTS
 BUILDDIR = build
-
-# Those that specify a NO_ARDUINO environment variable will
-# be able to use this Makefile with no Arduino dependency.
-# Please note that if ARDUINOPATH was set, it will override
-# the NO_ARDUINO behaviour.
-NO_ARDUINO = 1
-ifndef NO_ARDUINO
-# Path to your arduino installation
-ARDUINOPATH ?= ../../../../..
-endif
 
 # configurable options
 OPTIONS = -DF_CPU=72000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
@@ -48,21 +40,11 @@ OPTIONS = -DF_CPU=72000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
 OPTIONS += -D__$(MCU)__ -DARDUINO=10805 -DTEENSYDUINO=141
 
 # use "cortex-m4" for Teensy 3.x
-# use "cortex-m0plus" for Teensy LC
-#CPUARCH = cortex-m4
-#CPUARCH = cortex-m0plus
+# use "mk20dx256" for Teensy 3.2
 COREPATH = cores/teensy3
 CPPFLAGS += -D__MK20DX256__ -mcpu=cortex-m4
-LDSCRIPT = cores/teensy3/mk20dx256.ld
-LDFLAGS += -mcpu=cortex-m4 -T $(LDSCRIPT)
-
-
-# Other Makefiles and project templates for Teensy 3.x:
-#
-# https://github.com/apmorton/teensy-template
-# https://github.com/xxxajk/Arduino_Makefile_master
-# https://github.com/JonHylands/uCee
-
+MCU_LD = cores/teensy3/mk20dx256.ld
+LDFLAGS += -mcpu=cortex-m4 -T $(MCU_LD)
 
 #************************************************************************
 # Location of Teensyduino utilities, Toolchain, and Arduino Libraries.
@@ -70,10 +52,11 @@ LDFLAGS += -mcpu=cortex-m4 -T $(LDSCRIPT)
 # locations and edit the pathnames.  The rest of Arduino is not needed.
 #************************************************************************
 
-# Default to the normal GNU/Linux compiler path if NO_ARDUINO
-# and ARDUINOPATH was not set.
-#COMPILERPATH ?= /home/conor/arduino-1.8.5/hardware/tools/arm/bin
+# normal GNU/Linux compiler path
 COMPILERPATH ?= /usr/bin/
+
+# teensy tools locations
+TOOLSPATH = $(abspath /home/conor/arduino-1.8.5/hardware/tools)
 
 #************************************************************************
 # Settings below this point usually do not need to be edited
@@ -89,7 +72,7 @@ CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
 CFLAGS =
 
 # linker options
-LDFLAGS = -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 --specs=nano.specs -mthumb -T$(LDSCRIPT)
+LDFLAGS = -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 --specs=nano.specs -mthumb -T$(MCU_LD)
 
 # additional libraries to link
 LIBS = -lm
@@ -102,61 +85,90 @@ SIZE = $(COMPILERPATH)/arm-none-eabi-size
 
 # automatically create lists of the sources and objects
 
-# adding teensy cores for T3.2
-CPP_FILES += $(filter-out COREPATH/main.cpp, $(wildcard COREPATH*.cpp))
-C_FILES += $(wildcard COREPATH*.c)
+# adding teensy cores
+CPP_FILES += $(filter-out COREPATH/main.cpp, $(wildcard COREPATH/*.cpp))
+C_FILES += $(wildcard COREPATH/*.c)
 
-# add RN52 lib and ILI lib
+# add RN52, SPI & TFT lib and the TFT font
 EXTRALIBS = ILI9341_t3 SPI RN52 text
 CPP_FILES += $(foreach lib, $(EXTRALIBS), $(wildcard /$(lib)/*.cpp))
 C_FILES += $(foreach lib, $(EXTRALIBS), $(wildcard /$(lib)/*.c))
 
 # add obj names
-OBJSFILES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
-OBJS := $(foreach obj,$(OBJS_FILES), $(BUILDDIR)/$(obj))
+OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
 
-all: hex
+#************************************************************************
+# PJRC Make section
+#************************************************************************
 
-build: $(TARGET).elf
+all: $(TARGET).hex
 
-hex: $(TARGET).hex
-
-post_compile: $(TARGET).hex
-	$(Q)$(TOOLS_PATH)/teensy_post_compile -file="$(basename $<)" -path="$(call cygpath-win,$(CURDIR))" -tools="$(TOOLS_PATH)"
-
-reboot:
-	$(Q)-$(TOOLS_PATH)/teensy_reboot
-
-upload: post_compile reboot
-
-$(BUILDDIR)/%.o: %.c
-	@echo "[CC]\t$<"
-	$(Q)mkdir -p "$(dir $@)"
-	$(Q)$(CC) $(CPPFLAGS) $(CFLAGS) $(L_INC) -o "$@" -c "$<"
-
-$(BUILDDIR)/%.o: %.ino
-	@echo "[CXX]\t$<"
-	$(Q)mkdir -p "$(dir $@)"
-	$(Q)$(CC) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -c -x c++ -include Arduino.h "$<"
-
-$(BUILDDIR)/%.o: %.cpp
-	@echo "[CXX]\t$<"
-	@mkdir -p "$(dir $@)"
-	$(Q)$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -c "$<"
-
-$(TARGET).elf: $(OBJS) $(LDSCRIPT)
-	@echo "[LD]\t$@"
-	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(TARGET).map $(OBJS) $(LIBS)
+$(TARGET).elf: $(OBJS) $(MCU_LD)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 %.hex: %.elf
-	@echo "[HEX]\t$@"
-	$(Q)$(SIZE) "$<"
-	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
+	$(SIZE) $<
+	$(OBJCOPY) -O ihex -R .eeprom $< $@
+ifneq (,$(wildcard $(TOOLSPATH)))
+	$(TOOLSPATH)/teensy_post_compile -file=$(basename $@) -path=$(shell pwd) -tools=$(TOOLSPATH)
+	-$(TOOLSPATH)/teensy_reboot
+endif
 
 # compiler generated dependency info
 -include $(OBJS:.o=.d)
 
 clean:
-	@echo Cleaning...
-	$(Q)rm -rf "$(BUILDDIR)"
-	$(Q)rm -f "$(TARGET).elf" "$(TARGET).hex" "$(TARGET).map"
+	rm -f *.o *.d $(TARGET).elf $(TARGET).hex
+
+#************************************************************************
+# JonHylands/uCee Make section
+#************************************************************************    
+
+#OBJSFILES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
+#OBJS := $(foreach obj,$(OBJS_FILES), $(BUILDDIR)/$(obj))
+
+#all: hex
+
+#build: $(TARGET).elf
+
+#hex: $(TARGET).hex
+
+#post_compile: $(TARGET).hex
+#	$(Q)$(TOOLS_PATH)/teensy_post_compile -file="$(basename $<)" -path="$(call cygpath-win,$(CURDIR))" -tools="$(TOOLS_PATH)"
+
+#reboot:
+#	$(Q)-$(TOOLS_PATH)/teensy_reboot
+
+#upload: post_compile reboot
+
+#$(BUILDDIR)/%.o: %.c
+#	@echo "[CC]\t$<"
+#	$(Q)mkdir -p "$(dir $@)"
+#	$(Q)$(CC) $(CPPFLAGS) $(CFLAGS) $(L_INC) -o "$@" -c "$<"
+
+#$(BUILDDIR)/%.o: %.ino
+#	@echo "[CXX]\t$<"
+#	$(Q)mkdir -p "$(dir $@)"
+#	$(Q)$(CC) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -c -x c++ -include Arduino.h "$<"
+
+#$(BUILDDIR)/%.o: %.cpp
+#	@echo "[CXX]\t$<"
+#	@mkdir -p "$(dir $@)"
+#	$(Q)$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -c "$<"
+
+#$(TARGET).elf: $(OBJS) $(MCU_LD)
+#	@echo "[LD]\t$@"
+#	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(TARGET).map $(OBJS) $(LIBS)
+
+#%.hex: %.elf
+#	@echo "[HEX]\t$@"
+#	$(Q)$(SIZE) "$<"
+#	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
+
+# compiler generated dependency info
+#-include $(OBJS:.o=.d)
+
+#clean:
+#	@echo Cleaning...
+#	$(Q)rm -rf "$(BUILDDIR)"
+#	$(Q)rm -f "$(TARGET).elf" "$(TARGET).hex" "$(TARGET).map"
