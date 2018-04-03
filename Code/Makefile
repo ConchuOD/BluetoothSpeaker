@@ -98,7 +98,7 @@ C_FILES += $(foreach lib, $(EXTRALIBS), $(wildcard /$(lib)/*.c))
 OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
 
 #************************************************************************
-# PJRC Make section
+# PJRC Make section - implicit rules.
 #************************************************************************
 
 all: $(TARGET).hex

@@ -33,16 +33,14 @@ void setup() {
     }
     Serial.println(RN52_Serial3.getMetaData());
     Serial.println("Running PA init:");
-    digitalWrite(PIN_A0, LOW);
+    digitalWrite(PIN_SHUTDOWN, HIGH);
     initTime = millis();
     Serial.print("Send a character when you wish to turn off the amp.\n");
-    while(Serial.available() == 0 && elapsedTime < MAX_AMP_ON_TIME){
+    while(elapsedTime < MAX_AMP_ON_TIME){
         elapsedTime = millis() - initTime;
-        if(elapsedTime < MAX_AMP_ON_TIME/2){
-            Serial.print("Half max on-time elapsed.\n");
         }
     }
-    digitalWrite(PIN_A0, HIGH);
+    digitalWrite(PIN_SHUTDOWN, LOW);
     Serial.println("Amp turned off.");
 }
 

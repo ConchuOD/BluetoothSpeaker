@@ -18137,6 +18137,7 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <part name="TP5" library="testpad" library_urn="urn:adsk.eagle:library:385" deviceset="TPS" device="PAD1-17" package3d_urn="urn:adsk.eagle:package:27949/1"/>
 <part name="TP6" library="testpad" library_urn="urn:adsk.eagle:library:385" deviceset="TPS" device="PAD1-17" package3d_urn="urn:adsk.eagle:package:27949/1"/>
 <part name="GND13" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="C21" library="SparkFun-Capacitors" library_urn="urn:adsk.eagle:library:510" deviceset="1.0UF" device="-0603-16V-10%" package3d_urn="urn:adsk.eagle:package:37414/1" value="1.0uF"/>
 </parts>
 <sheets>
 <sheet>
@@ -18168,7 +18169,7 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <instance part="R4" gate="G$1" x="175.26" y="63.5" rot="R180"/>
 <instance part="R5" gate="G$1" x="194.31" y="66.04"/>
 <instance part="R6" gate="G$1" x="181.61" y="66.04"/>
-<instance part="GND1" gate="1" x="165.1" y="58.42"/>
+<instance part="GND1" gate="1" x="165.1" y="56.388"/>
 <instance part="C1" gate="G$1" x="204.47" y="78.74" rot="R90"/>
 <instance part="C2" gate="G$1" x="195.58" y="76.2" rot="R90"/>
 <instance part="C3" gate="G$1" x="196.85" y="58.42" rot="R270"/>
@@ -18238,6 +18239,7 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <instance part="TP5" gate="G$1" x="167.64" y="91.44"/>
 <instance part="TP6" gate="G$1" x="213.36" y="238.76"/>
 <instance part="GND13" gate="1" x="213.36" y="231.14"/>
+<instance part="C21" gate="G$1" x="168.91" y="60.96" rot="R270"/>
 </instances>
 <busses>
 </busses>
@@ -18281,6 +18283,7 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <segment>
 <pinref part="GND1" gate="1" pin="GND"/>
 <pinref part="R4" gate="G$1" pin="2"/>
+<wire x1="165.1" y1="58.928" x2="165.1" y2="60.96" width="0.1524" layer="91"/>
 <wire x1="165.1" y1="60.96" x2="165.1" y2="63.5" width="0.1524" layer="91"/>
 <wire x1="165.1" y1="63.5" x2="170.18" y2="63.5" width="0.1524" layer="91"/>
 <pinref part="R6" gate="G$1" pin="1"/>
@@ -18316,6 +18319,9 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <wire x1="83.82" y1="66.04" x2="83.82" y2="48.26" width="0.1524" layer="91"/>
 <wire x1="68.58" y1="66.04" x2="83.82" y2="66.04" width="0.1524" layer="91"/>
 <junction x="83.82" y="66.04"/>
+<pinref part="C21" gate="G$1" pin="2"/>
+<wire x1="166.37" y1="60.96" x2="165.1" y2="60.96" width="0.1524" layer="91"/>
+<junction x="165.1" y="60.96"/>
 </segment>
 <segment>
 <pinref part="C10" gate="G$1" pin="2"/>
@@ -18506,13 +18512,6 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <wire x1="180.34" y1="63.5" x2="182.88" y2="63.5" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="GVDD" class="0">
-<segment>
-<pinref part="R2" gate="G$1" pin="1"/>
-<pinref part="IC1" gate="G$1" pin="GVDD"/>
-<wire x1="205.74" y1="63.5" x2="210.82" y2="63.5" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="GAIN" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="GAIN"/>
@@ -18523,11 +18522,9 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <pinref part="IC1" gate="G$1" pin="SSCTRL"/>
 <wire x1="194.31" y1="63.5" x2="195.58" y2="63.5" width="0.1524" layer="91"/>
 <wire x1="210.82" y1="68.58" x2="208.28" y2="68.58" width="0.1524" layer="91"/>
-<wire x1="208.28" y1="68.58" x2="201.93" y2="68.58" width="0.1524" layer="91"/>
-<wire x1="194.31" y1="71.12" x2="194.31" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="194.31" y1="68.58" x2="194.31" y2="63.5" width="0.1524" layer="91"/>
 <junction x="194.31" y="63.5"/>
-<wire x1="201.93" y1="68.58" x2="201.93" y2="71.12" width="0.1524" layer="91"/>
-<wire x1="201.93" y1="71.12" x2="194.31" y2="71.12" width="0.1524" layer="91"/>
+<wire x1="208.28" y1="68.58" x2="194.31" y2="68.58" width="0.1524" layer="91"/>
 <wire x1="208.28" y1="71.12" x2="208.28" y2="68.58" width="0.1524" layer="91"/>
 <junction x="208.28" y="68.58"/>
 </segment>
@@ -18536,23 +18533,14 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <segment>
 <pinref part="IC1" gate="G$1" pin="LIMTHRES"/>
 <wire x1="210.82" y1="66.04" x2="205.74" y2="66.04" width="0.1524" layer="91"/>
-<wire x1="205.74" y1="66.04" x2="205.74" y2="72.39" width="0.1524" layer="91"/>
+<wire x1="205.74" y1="66.04" x2="205.74" y2="71.12" width="0.1524" layer="91"/>
 <pinref part="R6" gate="G$1" pin="2"/>
 <pinref part="R5" gate="G$1" pin="1"/>
 <wire x1="186.69" y1="66.04" x2="187.96" y2="66.04" width="0.1524" layer="91"/>
 <wire x1="187.96" y1="66.04" x2="189.23" y2="66.04" width="0.1524" layer="91"/>
-<wire x1="187.96" y1="72.39" x2="187.96" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="187.96" y1="71.12" x2="187.96" y2="66.04" width="0.1524" layer="91"/>
 <junction x="187.96" y="66.04"/>
-<wire x1="205.74" y1="72.39" x2="187.96" y2="72.39" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="LIMRATE" class="0">
-<segment>
-<pinref part="IC1" gate="G$1" pin="LIMRATE"/>
-<wire x1="210.82" y1="73.66" x2="204.47" y2="73.66" width="0.1524" layer="91"/>
-<wire x1="204.47" y1="73.66" x2="204.47" y2="66.04" width="0.1524" layer="91"/>
-<pinref part="R5" gate="G$1" pin="2"/>
-<wire x1="204.47" y1="66.04" x2="199.39" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="205.74" y1="71.12" x2="187.96" y2="71.12" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="RINN" class="0">
@@ -19564,6 +19552,26 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <pinref part="T3_2" gate="G$1" pin="23/A9/T/PWM"/>
 <wire x1="78.74" y1="119.38" x2="76.2" y2="119.38" width="0.1524" layer="91"/>
 <label x="73.66" y="119.38" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="GVDD" class="0">
+<segment>
+<pinref part="IC1" gate="G$1" pin="LIMRATE"/>
+<wire x1="210.82" y1="73.66" x2="204.47" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="204.47" y1="73.66" x2="204.47" y2="66.04" width="0.1524" layer="91"/>
+<pinref part="R5" gate="G$1" pin="2"/>
+<wire x1="204.47" y1="66.04" x2="199.39" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="204.47" y1="66.04" x2="204.47" y2="64.77" width="0.1524" layer="91"/>
+<wire x1="204.47" y1="64.77" x2="208.28" y2="64.77" width="0.1524" layer="91"/>
+<pinref part="R2" gate="G$1" pin="1"/>
+<pinref part="IC1" gate="G$1" pin="GVDD"/>
+<wire x1="205.74" y1="63.5" x2="208.28" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="208.28" y1="63.5" x2="210.82" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="208.28" y1="64.77" x2="208.28" y2="63.5" width="0.1524" layer="91"/>
+<junction x="208.28" y="63.5"/>
+<pinref part="C21" gate="G$1" pin="1"/>
+<wire x1="173.99" y1="60.96" x2="208.28" y2="60.96" width="0.1524" layer="91"/>
+<wire x1="208.28" y1="60.96" x2="208.28" y2="63.5" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
