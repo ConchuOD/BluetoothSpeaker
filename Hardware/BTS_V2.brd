@@ -3937,13 +3937,6 @@ einem neuen Namen ab.</description>
 <wire x1="73.66" y1="27.94" x2="74.93" y2="27.94" width="0.4064" layer="1"/>
 <wire x1="73.66" y1="27.94" x2="73.025" y2="26.924" width="0.4064" layer="1"/>
 <wire x1="73.66" y1="27.94" x2="74.295" y2="26.924" width="0.4064" layer="1"/>
-<polygon width="0.4064" layer="1">
-<vertex x="69.7484" y="29.3116"/>
-<vertex x="77.2414" y="29.3116"/>
-<vertex x="77.2414" y="26.543"/>
-<vertex x="69.723" y="26.543"/>
-<vertex x="69.723" y="29.2862"/>
-</polygon>
 <via x="12.7" y="13.335" extent="1-16" drill="0.35"/>
 <wire x1="72.505" y1="67.195" x2="72.39" y2="67.31" width="0.4064" layer="1"/>
 <wire x1="73.66" y1="27.94" x2="73.6952125" y2="27.94" width="0.4064" layer="1"/>
@@ -3989,6 +3982,12 @@ einem neuen Namen ab.</description>
 <vertex x="113.03" y="79.375"/>
 </polygon>
 <contactref element="C21" pad="2"/>
+<polygon width="0.1524" layer="1">
+<vertex x="69.85" y="29.464"/>
+<vertex x="77.47" y="29.464"/>
+<vertex x="77.47" y="26.416"/>
+<vertex x="69.85" y="26.416"/>
+</polygon>
 </signal>
 <signal name="N$1">
 <contactref element="IC1" pad="14"/>
