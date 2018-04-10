@@ -3921,7 +3921,7 @@ einem neuen Namen ab.</description>
 <wire x1="47.64" y1="29.03" x2="47.64" y2="30.33" width="0.4064" layer="1"/>
 <wire x1="33.64" y1="29.03" x2="47.64" y2="29.03" width="0.4064" layer="1"/>
 <via x="71.755" y="28.956" extent="1-16" drill="0.55"/>
-<via x="70.1294" y="27.94" extent="1-16" drill="0.55"/>
+<via x="70.358" y="27.94" extent="1-16" drill="0.55"/>
 <via x="71.755" y="26.924" extent="1-16" drill="0.55"/>
 <via x="73.025" y="26.924" extent="1-16" drill="0.55"/>
 <via x="72.3646" y="27.94" extent="1-16" drill="0.55"/>
