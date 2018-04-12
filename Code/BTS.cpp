@@ -281,7 +281,7 @@ void main(void){
             tft.setCursor(64,136);
         }
         #endif
-        pausedFlagArray = pausedFlag << 1; //update previously paused flag.
+        pausedFlagArray = pausedFlag << 1; /** check this to ensure functionality **///update previously paused flag. 
         newSongFlag = false;    //reset new song flag
         #ifdef DEBUG
         print("Loop time: ")
