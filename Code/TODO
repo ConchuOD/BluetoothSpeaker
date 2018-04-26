@@ -1,0 +1,3 @@
+Check conditions w/ strcmp
+Solve the const issue with the pauseFlag
+Redo song duration so that it returns an int not a string
