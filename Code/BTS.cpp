@@ -1,13 +1,8 @@
 /* Optional code segments - using this to seperately test code segments */
-<<<<<<< HEAD
-//#DEFINE DEBUG 1
-//#DEFINE DISPLAY 1
-//#DEFINE HC05 1
-=======
+
 #define DEBUG 1
-#define DISPLAY 1
-#define HC05 1
->>>>>>> origin/master
+//#define DISPLAY 1
+//#define HC05 1
 
 /* Requried libraries */
 #include <HardwareSerial.h>
