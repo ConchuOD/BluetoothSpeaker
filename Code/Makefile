@@ -99,7 +99,7 @@ A_FILES += $(wildcard COREPATH/*.S)
 OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(A_FILES:.S=.o)
 
 #************************************************************************
-# PJRC Make section
+# PJRC Make section - implicit rules.
 #************************************************************************
 
 all: $(TARGET).hex

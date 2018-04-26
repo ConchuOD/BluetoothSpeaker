@@ -44,6 +44,10 @@ void setup() {
     Serial.print("Send a character when you wish to turn off the amp.\n");
     while(elapsedTime < MAX_AMP_ON_TIME){
         elapsedTime = millis() - initTime;
+<<<<<<< HEAD
+=======
+        }
+>>>>>>> origin/master
     }
     digitalWrite(PIN_SHUTDOWN, LOW);
     Serial.println("Amp turned off.");

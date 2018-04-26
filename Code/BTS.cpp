@@ -1,7 +1,13 @@
 /* Optional code segments - using this to seperately test code segments */
+<<<<<<< HEAD
 //#DEFINE DEBUG 1
 //#DEFINE DISPLAY 1
 //#DEFINE HC05 1
+=======
+#define DEBUG 1
+#define DISPLAY 1
+#define HC05 1
+>>>>>>> origin/master
 
 /* Requried libraries */
 #include <HardwareSerial.h>
@@ -287,7 +293,7 @@ int main(void){
             tft.setCursor(64,136);
         }
         #endif
-        pausedFlagArray = pausedFlag << 1; //update previously paused flag.
+        pausedFlagArray = pausedFlag << 1; /** check this to ensure functionality **///update previously paused flag. 
         newSongFlag = false;    //reset new song flag
         #ifdef DEBUG
         print("Loop time: ")
