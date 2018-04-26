@@ -1,13 +1,14 @@
 /* Optional code segments - using this to seperately test code segments */
-#DEFINE DEBUG 1
-#DEFINE DISPLAY 1
-#DEFINE HC05 1
+//#DEFINE DEBUG 1
+//#DEFINE DISPLAY 1
+//#DEFINE HC05 1
 
 /* Requried libraries */
-#include "RN52_HardwareSerial.h"
-#include "HardwareSerial.h"
-#include "ILI9341_t3.h"
-#include "font_DroidSansMono.h"
+#include <HardwareSerial.h>
+#include <ILI9341_t3.h>
+#include <font_DroidSansMono.h>
+#include <RN52_HardwareSerial.h>
+#include <WString.h>
 
 /* Libraries that may be needed */ /** TODO - Figure out required headers (check arduino programmer code) **/
 #include "SPI.h"
@@ -36,14 +37,17 @@ ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MIS
 void shutdown(void); //write this function
 
 /** Finish Metadata related AT commands in HWSerial before using **/
-void main(void){
+int main(void){
     /* Variables */
     #ifdef DEBUG
     int timer = 0;
     #endif
-    char c, timeOut[13] = "00:00/00:00";
-    char *s = &timeOut;
-    string songArtist = "n/a", songAlbum = "n/a", songTitle = "n/a";
+    char c, timeOut[12];
+    char *s;
+    s = timeOut;
+    strcpy(timeOut, "00:00/00:00");
+    String songArtist = "n/a", songAlbum = "n/a", songTitle = "n/a";
+    String previousAlbum = "n/a", previousTitle = "n/a", previousArtist = "n/a";
     int songDuration, currentDuration, previousDuration = 0;    //songDuration is current a string in RN52_HWSerial
     int startTime = 0, elapsedTime = 0, timeAtPause = 0;
     int durationSeconds = 0, durationMinutes = 0;
@@ -53,6 +57,7 @@ void main(void){
     bool newSongFlag = false, pausedFlag = false, previousPausedFlag = false, eventBit5Flag = false, GPIO2Status = true;
     uint8_t pausedFlagArray = 0; /** Implement this without bools **/
     /* Setup code */
+    setup();
     sei();  //enable interupts
     pinMode(PIN_A0, OUTPUT);    //pin for command mode
     digitalWrite(PIN_A0, HIGH);
@@ -190,11 +195,12 @@ void main(void){
             On second thoughts, do I need this?
         **/
         /* Now get metadata information */
-        if(timeOut == "00:00/00:00" || millis()%METADATA_RESET == 0 || newSongFlag){  //runs on startup, every n seconds and on changes 
+        /** CHECK THIS CONDITION ESP strcmp **/
+        if( (strcmp(timeOut, "00:00/00:00") == 0) || millis()%METADATA_RESET == 0 || newSongFlag){  //runs on startup, every n seconds and on changes 
             previousAlbum = songAlbum;  //save the old versions of the text so that we can wipe screen
             songAlbum = RN52_Serial3.album();
             previousTitle = songTitle;
-            songTitle = RN52_Serial3.title();  
+            songTitle = RN52_Serial3.trackTitle();  
             previousArtist = songArtist;            
             songArtist = RN52_Serial3.artist();
             previousDuration = songDuration;         
@@ -228,7 +234,7 @@ void main(void){
         pausedFlagArray |= pausedFlag;
         switch(pausedFlagArray){
                 case pausedFlagArray == 0:  //keep increasing elapsed time
-                    elapsedTime = millis() - startTime();
+                    elapsedTime = millis() - startTime;
                     break;                
                 case pausedFlagArray == 1:  //save the time it was paused at
                     timeAtPause = millis();

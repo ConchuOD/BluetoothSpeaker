@@ -1,7 +1,3 @@
-# Teensyduino Core Library
-# http://www.pjrc.com/teensy/
-# Copyright (c) 2017 PJRC.COM, LLC.
-#
 # Modified for BTS 2018.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -32,17 +28,21 @@
 # the name of the project
 TARGET = BTS
 BUILDDIR = build
+MCU = MK20DX256
+
+# add RN52, SPI & TFT lib and the TFT font
+EXTRALIBS = ILI9341_t3 SPI RN52 text
 
 # configurable options
 OPTIONS = -DF_CPU=72000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
 
 # options needed by many Arduino libraries to configure for Teensy 3.x
-OPTIONS += -D__$(MCU)__ -DARDUINO=10805 -DTEENSYDUINO=141
+OPTIONS += -D__$(MCU)__  -DARDUINO=10805 -DTEENSYDUINO=141
 
 # use "cortex-m4" for Teensy 3.x
 # use "mk20dx256" for Teensy 3.2
 COREPATH = cores/teensy3
-CPPFLAGS += -D__MK20DX256__ -mcpu=cortex-m4
+CPPFLAGS += -mcpu=cortex-m4
 MCU_LD = cores/teensy3/mk20dx256.ld
 LDFLAGS += -mcpu=cortex-m4 -T $(MCU_LD)
 
@@ -63,7 +63,7 @@ TOOLSPATH = $(abspath /home/conor/arduino-1.8.5/hardware/tools)
 #************************************************************************
 
 # CPPFLAGS = compiler options for C and C++
-CPPFLAGS = -Wall -g -Os -mthumb -MMD $(OPTIONS) -I.
+CPPFLAGS = -Wall -g -Os -mthumb -MMD $(OPTIONS) -I. -I$(COREPATH) -I$(COREPATH)/avr -IILI9341_t3 -ISPI -IRN52 -Itext
 
 # compiler options for C++ only
 CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
@@ -84,6 +84,7 @@ OBJCOPY = $(COMPILERPATH)/arm-none-eabi-objcopy
 SIZE = $(COMPILERPATH)/arm-none-eabi-size
 
 # automatically create lists of the sources and objects
+CPP_FILES += BTS.cpp
 
 # adding teensy cores
 CPP_FILES += $(filter-out COREPATH/main.cpp, $(wildcard COREPATH/*.cpp))
@@ -93,9 +94,9 @@ C_FILES += $(wildcard COREPATH/*.c)
 EXTRALIBS = ILI9341_t3 SPI RN52 text
 CPP_FILES += $(foreach lib, $(EXTRALIBS), $(wildcard /$(lib)/*.cpp))
 C_FILES += $(foreach lib, $(EXTRALIBS), $(wildcard /$(lib)/*.c))
-
+A_FILES += $(wildcard COREPATH/*.S)
 # add obj names
-OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
+OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(A_FILES:.S=.o)
 
 #************************************************************************
 # PJRC Make section
