@@ -12,7 +12,7 @@
 #include <WString.h>
 
 /* Libraries that may be needed */ /** TODO - Figure out required headers (check arduino programmer code) **/
-#include "SPI.h"
+#include <SPI.h>
 
 /* Definitions */
 #define TFT_DC      21
@@ -44,12 +44,12 @@ int main(void){
     int timer = 0;
     #endif
     char c, timeOut[12];
-    char *s;
+    char *s, *previousTimeOut;
     s = timeOut;
     strcpy(timeOut, "00:00/00:00");
     String songArtist = "n/a", songAlbum = "n/a", songTitle = "n/a";
     String previousAlbum = "n/a", previousTitle = "n/a", previousArtist = "n/a";
-    int songDuration, currentDuration, previousDuration = 0;    //songDuration is current a string in RN52_HWSerial
+    int songDuration = 0, currentDuration = 0, previousDuration = 0;    //songDuration is current a string in RN52_HWSerial
     int startTime = 0, elapsedTime = 0, timeAtPause = 0;
     int durationSeconds = 0, durationMinutes = 0;
     int elapsedSeconds = 0, elapsedMinutes = 0;
@@ -58,7 +58,7 @@ int main(void){
     bool newSongFlag = false, pausedFlag = false, previousPausedFlag = false, eventBit5Flag = false, GPIO2Status = true;
     uint8_t pausedFlagArray = 0; /** Implement this without bools **/
     /* Setup code */
-    setup();
+    //setup();
     sei();  //enable interupts
     pinMode(PIN_A0, OUTPUT);    //pin for command mode
     digitalWrite(PIN_A0, HIGH);
@@ -79,7 +79,7 @@ int main(void){
     #endif
     RN52_Serial3.begin(RN52_BAUD_RATE); //enable RN52
     digitalWrite(PIN_A0, LOW);
-    while (RN52_Serial.available() == 0);   //wait for ACK (CMD)
+    while (RN52_Serial3.available() == 0);   //wait for ACK (CMD)
     c = RN52_Serial3.read();
     if (c == 'C') {
         delay(100);
@@ -136,26 +136,26 @@ int main(void){
         if(Serial2.available() != 0){
             c = Serial2.read();
             switch(c){
-                case c == ' ':
+                case ' ':
                     RN52_Serial3.playPause();    //pause
                     pausedFlag = pausedFlag ? false : true; //toggle paused flag
                     #ifdef DEBUG
                     Serial.println("Paused.");
                     #endif
                     break;
-                case c == '+':
+                case '+':
                     RN52_Serial3.volumeUp();    //volUp
                     #ifdef DEBUG
                     Serial.println("Volume increased.");
                     #endif
                     break;
-                case c == '-':
+                case '-':
                     RN52_Serial3.volumeDown();    //volDown
                     #ifdef DEBUG
                     Serial.println("Volume decreased.");
                     #endif
                     break;
-                case c == '>':
+                case '>':
                     RN52_Serial3.nextTrack();    //skip
                     newSongFlag = true;
                     pausedFlag = false;
@@ -163,7 +163,7 @@ int main(void){
                     Serial.println("Song skipped.");
                     #endif
                     break;
-                case c == '<':
+                case '<':
                     RN52_Serial3.prevTrack();    //previous
                     newSongFlag = true;
                     pausedFlag = false;
@@ -212,7 +212,7 @@ int main(void){
             }
             else if (songDuration != previousDuration){
                 newSongFlag = true;
-            }
+            } 
         }
         pausedFlag = newSongFlag ? false : pausedFlag;    //reset paused flag if a new song is detected (default spotify behaviour).
         #ifdef DEBUG
@@ -234,16 +234,16 @@ int main(void){
         /* Account for the duration staying constant during a pause. Only for own pauses as AVRCP doesnt give pause data. */
         pausedFlagArray |= pausedFlag;
         switch(pausedFlagArray){
-                case pausedFlagArray == 0:  //keep increasing elapsed time
+                case 0:  //keep increasing elapsed time
                     elapsedTime = millis() - startTime;
                     break;                
-                case pausedFlagArray == 1:  //save the time it was paused at
+                case 1:  //save the time it was paused at
                     timeAtPause = millis();
                     break;                
-                case pausedFlagArray == 2:  //compute new start time
+                case 2:  //compute new start time
                     startTime = timeAtPause - elapsedTime;  //lol bodged
                     break;                
-                case pausedFlagArray == 3:  //still paused
+                case 3:  //still paused
                     break;
                 default:
                     shutdown();
@@ -291,8 +291,8 @@ int main(void){
         pausedFlagArray = pausedFlag << 1; /** check this to ensure functionality **///update previously paused flag. 
         newSongFlag = false;    //reset new song flag
         #ifdef DEBUG
-        print("Loop time: ")
-        println(millis - timer);
+        Serial.print("Loop time: ");
+        Serial.println(millis() - timer);
         #endif
     }
     shutdown(); //if this is reached something really bad has happened.    
@@ -301,8 +301,8 @@ int main(void){
 void shutdown(void){ // send exit cmd mode, do all shutdown stuff
     digitalWrite(PIN_SHUTDOWN, LOW); //turn off the PA
     #ifdef DEBUG
-    println("-----------------------")
-    println("Something bad happened.")
-    println("-----------------------")
+    Serial.println("-----------------------");
+    Serial.println("Something bad happened.");
+    Serial.println("-----------------------");
     #endif
 }

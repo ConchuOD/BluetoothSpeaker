@@ -41,10 +41,10 @@ OPTIONS += -D__$(MCU)__  -DARDUINO=10805 -DTEENSYDUINO=141
 
 # use "cortex-m4" for Teensy 3.x
 # use "mk20dx256" for Teensy 3.2
-COREPATH = cores/teensy3
+COREPATH = $(abspath cores/teensy3)
 CPPFLAGS += -mcpu=cortex-m4
 MCU_LD = cores/teensy3/mk20dx256.ld
-LDFLAGS += -mcpu=cortex-m4 -T $(MCU_LD)
+LDFLAGS = -mcpu=cortex-m4 -T $(MCU_LD)
 
 #************************************************************************
 # Location of Teensyduino utilities, Toolchain, and Arduino Libraries.
@@ -63,19 +63,19 @@ TOOLSPATH = $(abspath /home/conor/arduino-1.8.5/hardware/tools)
 #************************************************************************
 
 # CPPFLAGS = compiler options for C and C++
-CPPFLAGS = -Wall -g -Os -mthumb -MMD $(OPTIONS) -I. -I$(COREPATH) -I$(COREPATH)/avr -IILI9341_t3 -ISPI -IRN52 -Itext
+CPPFLAGS += -Wall -g -Os -mthumb -MMD $(OPTIONS) -I. -I$(COREPATH) -I$(COREPATH)/avr -IILI9341_t3 -ISPI -IRN52 -Itext
 
 # compiler options for C++ only
-CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
+CXXFLAGS += -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
 
 # compiler options for C only
-CFLAGS =
+CFLAGS +=
 
 # linker options
-LDFLAGS = -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 --specs=nano.specs -mthumb -T$(MCU_LD)
+LDFLAGS += -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 --specs=nano.specs -mthumb
 
 # additional libraries to link
-LIBS = -lm
+LIBS += -lm
 
 # names for the compiler programs
 CC = $(COMPILERPATH)/arm-none-eabi-gcc
@@ -84,17 +84,16 @@ OBJCOPY = $(COMPILERPATH)/arm-none-eabi-objcopy
 SIZE = $(COMPILERPATH)/arm-none-eabi-size
 
 # automatically create lists of the sources and objects
-CPP_FILES += BTS.cpp
+CPP_FILES = BTS.cpp
 
 # adding teensy cores
-CPP_FILES += $(filter-out COREPATH/main.cpp, $(wildcard COREPATH/*.cpp))
-C_FILES += $(wildcard COREPATH/*.c)
+CPP_FILES += $(filter-out $(COREPATH)/main.cpp, $(wildcard $(COREPATH)/*.cpp))
+C_FILES = $(wildcard $(COREPATH)/*.c)
 
 # add RN52, SPI & TFT lib and the TFT font
-EXTRALIBS = ILI9341_t3 SPI RN52 text
-CPP_FILES += $(foreach lib, $(EXTRALIBS), $(wildcard /$(lib)/*.cpp))
-C_FILES += $(foreach lib, $(EXTRALIBS), $(wildcard /$(lib)/*.c))
-A_FILES += $(wildcard COREPATH/*.S)
+CPP_FILES += $(foreach lib,$(EXTRALIBS),$(wildcard $(lib)/*.cpp))
+C_FILES += $(foreach lib, $(EXTRALIBS),$(wildcard $(lib)/*.c))
+A_FILES += $(wildcard $(COREPATH)/*.S)
 # add obj names
 OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(A_FILES:.S=.o)
 
@@ -120,6 +119,8 @@ endif
 
 clean:
 	rm -f *.o *.d $(TARGET).elf $(TARGET).hex
+
+print-%  : ; @echo $* = $($*)
 
 #************************************************************************
 # JonHylands/uCee Make section
