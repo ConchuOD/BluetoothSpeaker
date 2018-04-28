@@ -21,12 +21,12 @@
 #define TFT_MOSI    11
 #define TFT_SCLK    13
 #define TFT_MISO    12
-#define SERIAL_BAUD_RATE 9600
+#define SERIAL_BAUD_RATE 115200
 #define RN52_BAUD_RATE 115200
 #define BUTTON_HEIGHT 60
 #define BUTTON_WIDTH 64
-#define METADATA_RESET 10000
-#define GPIO2_PIN 17
+#define METADATA_RESET 100
+#define GPIO2_PIN 21
 #define PIN_SHUTDOWN 2
 
 /* Globals */
@@ -88,6 +88,12 @@ int main(void){
         Serial.println("Successfully entered command mode.");
         #endif
     }
+    /* Turn on track change event */
+    RN52_Serial3.trackChangeEvent(1);   
+    #ifdef DEBUG
+    Serial.print("Ext. features: ");
+    Serial.println(RN52_Serial3.getExtFeatures());
+    #endif
     #ifdef DISPLAY
     /* Setup the buttons on the display */
     tft.begin();
@@ -128,7 +134,7 @@ int main(void){
     /* Operational code */
     for(;;){
         #ifdef DEBUG
-        delay(80);
+        delay(50);
         timer = millis();
         #endif
         #ifdef HC05
@@ -182,14 +188,20 @@ int main(void){
         GPIO2Status = digitalRead(GPIO2_PIN);
         if(!GPIO2Status){
             eventRegStatus = RN52_Serial3.queryState();
-            if(eventRegStatus & (1 << 5)){
+            #ifdef DEBUG
+            Serial.print("eventRegStatus ");
+            Serial.println(eventRegStatus);
+
+            #endif
+            if(eventRegStatus == 11277){
                 newSongFlag = true;
+                #ifdef DEBUG
+                Serial.print("track event ");
+                Serial.println(eventRegStatus & (1 << 5));
+                #endif
             }
         }
-        #ifdef DEBUG
-        Serial.print("eventRegStatus");
-        Serial.println(eventRegStatus & (1 << 5));
-        #endif
+
         /** 
             Do some maths here in an attempt to detect if a new song is possible, if it is set the newSongFlag.
             Maybe: start time + elasped > duration.
@@ -197,7 +209,11 @@ int main(void){
         **/
         /* Now get metadata information */
         /** CHECK THIS CONDITION ESP strcmp **/
+        Serial.println(millis()%METADATA_RESET);
         if( (strcmp(timeOut, "00:00/00:00") == 0) || millis()%METADATA_RESET == 0 || newSongFlag){  //runs on startup, every n seconds and on changes 
+            #ifdef DEBUG
+            Serial.println("...");
+            #endif
             previousAlbum = songAlbum;  //save the old versions of the text so that we can wipe screen
             songAlbum = RN52_Serial3.album();
             previousTitle = songTitle;
@@ -206,21 +222,16 @@ int main(void){
             songArtist = RN52_Serial3.artist();
             previousDuration = songDuration;         
             songDuration = RN52_Serial3.trackDuration();
+
             if(songTitle == "" || songArtist == ""){
                 newSongFlag = false; 
                 continue;  //if info is blank then we have no song playing.
             }
-            else if (songDuration != previousDuration){
+            else if (songTitle != previousTitle){
                 newSongFlag = true;
             } 
         }
         pausedFlag = newSongFlag ? false : pausedFlag;    //reset paused flag if a new song is detected (default spotify behaviour).
-        #ifdef DEBUG
-        if(newSongFlag){           
-            Serial.print("Title: ");
-            Serial.println(songTitle);
-        }
-        #endif
         /* Time update */
         if(newSongFlag){
             startTime = millis();
@@ -290,10 +301,10 @@ int main(void){
         #endif
         pausedFlagArray = pausedFlag << 1; /** check this to ensure functionality **///update previously paused flag. 
         newSongFlag = false;    //reset new song flag
-        #ifdef DEBUG
-        Serial.print("Loop time: ");
-        Serial.println(millis() - timer);
-        #endif
+        //#ifdef DEBUG
+        //Serial.print("Loop time: ");
+        //Serial.println(millis() - timer);
+        //#endif
     }
     shutdown(); //if this is reached something really bad has happened.    
 }

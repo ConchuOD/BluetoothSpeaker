@@ -84,18 +84,18 @@ OBJCOPY = $(COMPILERPATH)/arm-none-eabi-objcopy
 SIZE = $(COMPILERPATH)/arm-none-eabi-size
 
 # automatically create lists of the sources and objects
-CPP_FILES = BTS.cpp
+CXX_FILES = BTS.cpp
 
 # adding teensy cores
-CPP_FILES += $(filter-out $(COREPATH)/main.cpp, $(wildcard $(COREPATH)/*.cpp))
+CXX_FILES += $(filter-out $(COREPATH)/main.cpp, $(wildcard $(COREPATH)/*.cpp))
 C_FILES = $(wildcard $(COREPATH)/*.c)
 
 # add RN52, SPI & TFT lib and the TFT font
-CPP_FILES += $(foreach lib,$(EXTRALIBS),$(wildcard $(lib)/*.cpp))
+CXX_FILES += $(foreach lib,$(EXTRALIBS),$(wildcard $(lib)/*.cpp))
 C_FILES += $(foreach lib, $(EXTRALIBS),$(wildcard $(lib)/*.c))
 A_FILES += $(wildcard $(COREPATH)/*.S)
 # add obj names
-OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(A_FILES:.S=.o)
+OBJS := $(C_FILES:.c=.o) $(CXX_FILES:.cpp=.o) $(A_FILES:.S=.o)
 
 #************************************************************************
 # PJRC Make section - implicit rules.
@@ -126,7 +126,7 @@ print-%  : ; @echo $* = $($*)
 # JonHylands/uCee Make section
 #************************************************************************    
 
-#OBJSFILES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
+#OBJSFILES := $(C_FILES:.c=.o) $(CXX_FILES:.cpp=.o)
 #OBJS := $(foreach obj,$(OBJS_FILES), $(BUILDDIR)/$(obj))
 
 #all: hex
