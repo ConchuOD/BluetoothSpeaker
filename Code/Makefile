@@ -1,3 +1,7 @@
+# Teensyduino Core Library
+# http://www.pjrc.com/teensy
+# Copyright (c) 2017 PJRC.COM, LLC.
+#
 # Modified for BTS 2018.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
