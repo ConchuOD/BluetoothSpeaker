@@ -4,7 +4,3 @@ The power delivery circuitry is about the only thing I have as of yet confirmed 
 For now I know that the code at least compiles and the makefile is works. :)
 
 While testing the BTS v1.0 board a number of issues were found and those are being addressed in the v2.0 board which is current a W.I.P. as testing has not been completed. When this testing is in fact complete then and further errors will be rectified and the v2.0 board sent to be made.
-
-             
-
-
