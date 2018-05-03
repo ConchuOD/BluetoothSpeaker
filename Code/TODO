@@ -1,3 +1,4 @@
 Check conditions w/ strcmp
-Solve the const issue with the pauseFlag
-Redo song duration so that it returns an int not a string
+Change RN52getMetadata so that it edits class variables, title/songname etc all pull from these class variables to
+    save on some of the overhead in constant transactions w/ the RN52. Need to then run getMetadata once per loop 
+    rather than ~6 times.

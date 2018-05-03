@@ -55,7 +55,7 @@ int main(void){
     int elapsed_seconds = 0, elapsed_minutes = 0;
     int event_reg_status = 0;
     /** Insert code to deal with flags in metadata handling (reset in particular) **/
-    bool new_song_flag = false, paused_flag = false, previous_paused_flag = false, event_bit_5_flag = false, GPIO_2_status = true;
+    bool new_song_flag = false, paused_flag = false, previous_paused_flag = false, event_bit5_flag = false, GPIO_2_status = true;
     uint8_t paused_flag_array = 0; /** Implement this without bools **/
     /* Setup code */
     //setup();
