@@ -12,5 +12,4 @@
 	url = https://github.com/PaulStoffregen/cores
 [submodule "Code/Adafruit_STMPE610"]
 	path = Code/Adafruit_STMPE610
-
 	url = https://github.com/adafruit/Adafruit_STMPE610
