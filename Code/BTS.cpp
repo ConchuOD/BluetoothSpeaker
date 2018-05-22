@@ -10,6 +10,7 @@
 #include <font_DroidSansMono.h>
 #include <RN52_HardwareSerial.h>
 #include <WString.h>
+#include <Adafruit_STMPE610.h>
 
 /* Libraries that may be needed */ /** TODO - Figure out required headers (check arduino programmer code) **/
 #include <SPI.h>
@@ -17,20 +18,26 @@
 /* Definitions */
 #define TFT_DC      21
 #define TFT_CS      20
-#define TFT_RST    255  // 255 = unused, connect to 3.3V
+#define TFT_RST     255  // 255 = unused, connect to 3.3V
 #define TFT_MOSI    11
 #define TFT_SCLK    13
 #define TFT_MISO    12
-#define SERIAL_BAUD_RATE 115200
-#define RN52_BAUD_RATE 115200
-#define BUTTON_HEIGHT 60
-#define BUTTON_WIDTH 64
-#define METADATA_RESET 100
-#define GPIO2_PIN 21
-#define PIN_SHUTDOWN 2
+#define STMPE_CS    22
+#define TS_MINX     150
+#define TS_MINY     130
+#define TS_MAXX     3800
+#define TS_MAXY     4000
+#define SERIAL_BAUD_RATE    115200
+#define RN52_BAUD_RATE      115200
+#define BUTTON_HEIGHT       60
+#define BUTTON_WIDTH        64
+#define METADATA_RESET      100
+#define GPIO2_PIN           21
+#define PIN_SHUTDOWN        2
 
 /* Globals */
 #ifdef DISPLAY
+Adafruit_STMPE610 TouchScreen = Adafruit_STMPE610(STMPE_CS);
 ILI9341_t3 TFT = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MISO);
 #endif
 
@@ -54,6 +61,8 @@ int main(void){
     int duration_seconds = 0, duration_minutes = 0;
     int elapsed_seconds = 0, elapsed_minutes = 0;
     int event_reg_status = 0;
+    TS_Point touched_location;
+    bool touched_flag = false;
     /** Insert code to deal with flags in metadata handling (reset in particular) **/
     bool new_song_flag = false, paused_flag = false, previous_paused_flag = false, event_bit5_flag = false, GPIO_2_status = true;
     uint8_t paused_flag_array = 0; /** Implement this without bools **/
@@ -81,7 +90,7 @@ int main(void){
     digitalWrite(PIN_A0, LOW);
     while (RN52_Serial3.available() == 0);   //wait for ACK (CMD)
     c = RN52_Serial3.read();
-    if (c == 'C') {
+    if (c == 'C'){
         delay(100);
         RN52_Serial3.flush();
         #ifdef DEBUG
@@ -97,6 +106,11 @@ int main(void){
     #ifdef DISPLAY
     /* Setup the buttons on the display */
     TFT.begin();
+    if (!TouchScreen.begin()){ 
+        #ifdef DEBUG
+        Serial.println("Unable to start touchscreen.");
+        #endif
+    } 
     TFT.fillScreen(ILI9341_BLACK);
     TFT.setTextColor(ILI9341_PINK);
     TFT.setTextSize(2);
@@ -105,13 +119,13 @@ int main(void){
     /** 
         Later these can be made into bitmaps of actual buttons?
     **/
-    TFT.fillRect(0,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_BLUE);
-    TFT.fillRect(64,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_GREEN);
-    TFT.fillRect(128,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_RED);
-    TFT.fillRect(192,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_ORANGE);
-    TFT.fillRect(256,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_DARKCYAN);
-    TFT.setCursor(10,4);
+    TFT.fillRect(0,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_BLUE);        //vol down
+    TFT.fillRect(64,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_GREEN);      //previous
+    TFT.fillRect(128,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_RED);       //play/pause
+    TFT.fillRect(192,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_ORANGE);    //next
+    TFT.fillRect(256,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_DARKCYAN);  //vol up
     /* Initialise the song display */
+    TFT.setCursor(10,4);
     TFT.print(" Title:");
     TFT.setCursor(10,48);
     TFT.print("Artist:");
@@ -136,6 +150,57 @@ int main(void){
         #ifdef DEBUG
         delay(50);
         timer = millis();
+        #endif
+        #ifdef DISPLAY
+        if (!TouchScreen.bufferEmpty()){   
+            touched_flag = true;
+            touched_location = ts.getPoint(); 
+            touched_location.x = map(touchedLocation.x, TS_MINY, TS_MAXY, 0, TFT.height());
+            touched_location.y = map(touchedLocation.y, TS_MINX, TS_MAXX, 0, TFT.width());
+            #ifdef DEBUG
+            Serial.print("X coord =");
+            Serial.println(touched_location.x);
+            Serial.print("Y coord =");
+            Serial.println(touched_location.y);
+            #endif
+        }
+        if(touched_flag){
+            if(touched_location.x < 64 && touched_location.y > 180){
+                RN52_Serial3.volumeDown();
+                #ifdef DEBUG
+                Serial.println("Volume decreased.");
+                #endif
+            }
+            else if(touched_location.x < 128 && touched_location.y > 180){
+                RN52_Serial3.prevTrack();    //previous
+                new_song_flag = true;
+                paused_flag = false;
+                #ifdef DEBUG
+                Serial.println("Song rewound.");
+                #endif
+            }
+            else if(touched_location.x < 192 && touched_location.y > 180){
+                RN52_Serial3.playPause();    //pause
+                paused_flag = paused_flag ? false : true; //toggle paused flag
+                #ifdef DEBUG
+                Serial.println("Paused.");
+                #endif
+            }
+            else if(touched_location.x < 256 && touched_location.y > 180){
+                RN52_Serial3.nextTrack();    //skip
+                new_song_flag = true;
+                paused_flag = false;
+                #ifdef DEBUG
+                Serial.println("Song skipped.");
+                #endif
+            }
+            else if(touched_location.y > 180){
+                RN52_Serial3.volumeUp();    //volUp
+                #ifdef DEBUG
+                Serial.println("Volume increased.");
+                #endif    
+        }           
+    }
         #endif
         #ifdef HC05
         /* Check for HC05 commands */
@@ -174,7 +239,7 @@ int main(void){
                     new_song_flag = true;
                     paused_flag = false;
                     #ifdef DEBUG
-                    Serial.println("Song rewinded.");
+                    Serial.println("Song rewound.");
                     #endif
                     break;
                 default:
@@ -201,7 +266,6 @@ int main(void){
                 #endif
             }
         }
-
         /** 
             Do some maths here in an attempt to detect if a new song is possible, if it is set the new_song_flag.
             Maybe: start time + elasped > duration.
@@ -209,7 +273,9 @@ int main(void){
         **/
         /* Now get metadata information */
         /** CHECK THIS CONDITION ESP strcmp **/
+        #ifdef DEBUG
         Serial.println(millis()%METADATA_RESET);
+        #endif
         if( (strcmp(timeOut, "00:00/00:00") == 0) || millis()%METADATA_RESET == 0 || new_song_flag){  //runs on startup, every n seconds and on changes 
             #ifdef DEBUG
             Serial.println("...");
@@ -301,6 +367,7 @@ int main(void){
         #endif
         paused_flag_array = paused_flag << 1; /** check this to ensure functionality **///update previously paused flag. 
         new_song_flag = false;    //reset new song flag
+        touched_flag = false;
         //#ifdef DEBUG
         //Serial.print("Loop time: ");
         //Serial.println(millis() - timer);
