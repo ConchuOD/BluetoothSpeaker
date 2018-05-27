@@ -35,7 +35,7 @@ BUILDDIR = build
 MCU = MK20DX256
 
 # add RN52, SPI & TFT lib and the TFT font
-EXTRALIBS = ILI9341_t3 SPI RN52 text Adafruit_STMPE610
+EXTRALIBS = ILI9341_t3 SPI RN52 text Adafruit_STMPE610 Wire
 
 # configurable options
 OPTIONS = -DF_CPU=72000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
@@ -67,7 +67,7 @@ TOOLSPATH = $(abspath /home/conor/arduino-1.8.5/hardware/tools)
 #************************************************************************
 
 # CPPFLAGS = compiler options for C and C++
-CPPFLAGS += -Wall -g -Os -mthumb -MMD $(OPTIONS) -I. -I$(COREPATH) -I$(COREPATH)/avr -IILI9341_t3 -ISPI -IRN52 -Itext
+CPPFLAGS += -Wall -g -Os -mthumb -MMD $(OPTIONS) -I. -I$(COREPATH) -I$(COREPATH)/avr -IILI9341_t3 -ISPI -IRN52 -Itext -IAdafruit_STMPE610 -IWire
 
 # compiler options for C++ only
 CXXFLAGS += -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti

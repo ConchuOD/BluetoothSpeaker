@@ -4,3 +4,5 @@ Change RN52getMetadata so that it edits class variables, title/songname etc all 
     rather than ~6 times.
 Check TFT/Touch code
 Cut out irrelevant parts of font code
+Change makefile to add headers dynamically
+Sort out outsized strings for display

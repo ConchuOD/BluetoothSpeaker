@@ -1,7 +1,7 @@
 /* Optional code segments - using this to seperately test code segments */
 
 #define DEBUG 1
-//#define DISPLAY 1
+#define DISPLAY 1
 //#define HC05 1
 
 /* Requried libraries */
@@ -32,8 +32,9 @@
 #define BUTTON_HEIGHT       60
 #define BUTTON_WIDTH        64
 #define METADATA_RESET      100
-#define GPIO2_PIN           21
+#define GPIO2_PIN           17
 #define PIN_SHUTDOWN        2
+#define GPIO9_PIN           15
 
 /* Globals */
 #ifdef DISPLAY
@@ -47,6 +48,7 @@ void shutdown(void); //write this function
 /** Finish Metadata related AT commands in HWSerial before using **/
 int main(void){
     /* Variables */
+    String test_len = "117";
     #ifdef DEBUG
     int timer = 0;
     #endif
@@ -69,8 +71,8 @@ int main(void){
     /* Setup code */
     //setup();
     sei();  //enable interupts
-    pinMode(PIN_A0, OUTPUT);    //pin for command mode
-    digitalWrite(PIN_A0, HIGH);
+    pinMode(GPIO9_PIN, OUTPUT);    //pin for command mode
+    digitalWrite(GPIO9_PIN, HIGH);
     pinMode(GPIO2_PIN, INPUT); //pin for event register
     pinMode(PIN_SHUTDOWN, OUTPUT);  //pin for PA enable
     digitalWrite(PIN_SHUTDOWN, LOW);
@@ -83,11 +85,11 @@ int main(void){
     #ifdef HC05
     Serial2.begin(SERIAL_BAUD_RATE);    //enable HC05
     #endif
+    RN52_Serial3.begin(RN52_BAUD_RATE); //enable RN52
     #ifdef DEBUG
     Serial.println("Starting RN52 Serial");
     #endif
-    RN52_Serial3.begin(RN52_BAUD_RATE); //enable RN52
-    digitalWrite(PIN_A0, LOW);
+    digitalWrite(GPIO9_PIN, LOW);
     while (RN52_Serial3.available() == 0);   //wait for ACK (CMD)
     c = RN52_Serial3.read();
     if (c == 'C'){
@@ -114,7 +116,8 @@ int main(void){
     TFT.fillScreen(ILI9341_BLACK);
     TFT.setTextColor(ILI9341_PINK);
     TFT.setTextSize(2);
-    TFT.setFont(DroidSansMono_40);
+    TFT.setFont(DroidSansMono_16);
+    TFT.setRotation(3);
     delay(2000);
     /** 
         Later these can be made into bitmaps of actual buttons?
@@ -134,14 +137,15 @@ int main(void){
     TFT.setCursor(10,136);
     TFT.print("  Time:");
     delay(2000);
-    TFT.setCursor(64,4);
+    TFT.setCursor(100,4);
     TFT.print(song_title);
-    TFT.setCursor(64,48);
+    TFT.setCursor(100,48);
     TFT.print(song_artist);
-    TFT.setCursor(64,92);
+    TFT.setCursor(100,92);
     TFT.print(song_album);
-    TFT.setCursor(64,136);
-    sprintf(s,"%2d:%2d/%2d:%2d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
+    TFT.setCursor(100,136);
+    delay(10000);
+    sprintf(s,"%2.0d:%2.0d/%2.0d:%2.0d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
     TFT.print(timeOut);
     #endif
     digitalWrite(PIN_SHUTDOWN, HIGH); // turn on PA after setup complete
@@ -154,9 +158,9 @@ int main(void){
         #ifdef DISPLAY
         if (!TouchScreen.bufferEmpty()){   
             touched_flag = true;
-            touched_location = ts.getPoint(); 
-            touched_location.x = map(touchedLocation.x, TS_MINY, TS_MAXY, 0, TFT.height());
-            touched_location.y = map(touchedLocation.y, TS_MINX, TS_MAXX, 0, TFT.width());
+            touched_location = TouchScreen.getPoint(); 
+            touched_location.x = map(touched_location.x, TS_MINY, TS_MAXY, 0, TFT.height());
+            touched_location.y = map(touched_location.y, TS_MINX, TS_MAXX, 0, TFT.width());
             #ifdef DEBUG
             Serial.print("X coord =");
             Serial.println(touched_location.x);
@@ -307,7 +311,7 @@ int main(void){
             #endif
         }
         duration_seconds = (song_duration/1000)%60;
-        duration_minutes = (song_duration/1000)%3600;
+        duration_minutes = ((song_duration/1000)/60)%60;
         /* Account for the duration staying constant during a pause. Only for own pauses as AVRCP doesnt give pause data. */
         paused_flag_array |= paused_flag;
         switch(paused_flag_array){
@@ -329,10 +333,10 @@ int main(void){
                     #endif
             }
         elapsed_seconds = (elapsed_time/1000)%60;
-        elapsed_minutes = (elapsed_time/1000)%3600;
+        elapsed_minutes = ((elapsed_time/1000)/60)%60;
         #ifdef DISPLAY  
         TFT.setTextColor(ILI9341_BLACK);        
-        TFT.setCursor(64,136);
+        TFT.setCursor(100,136);
         TFT.print(timeOut); //print the old time in black
         TFT.setTextColor(ILI9341_PINK);
         #endif
@@ -344,25 +348,25 @@ int main(void){
         }
         #endif
         #ifdef DISPLAY
-        TFT.setCursor(64,136);
+        TFT.setCursor(100,136);
         TFT.print(timeOut); //print the new time
         /* Metadata Update */
         if(new_song_flag){
             TFT.setTextColor(ILI9341_BLACK);
-            TFT.setCursor(64,4);
+            TFT.setCursor(100,4);
             TFT.print(previous_title);
-            TFT.setCursor(64,48);
+            TFT.setCursor(100,48);
             TFT.print(previous_artist);
-            TFT.setCursor(64,92);
+            TFT.setCursor(100,92);
             TFT.print(previous_album);            
             TFT.setTextColor(ILI9341_PINK);
-            TFT.setCursor(64,4);
+            TFT.setCursor(100,4);
             TFT.print(song_title);
-            TFT.setCursor(64,48);
+            TFT.setCursor(100,48);
             TFT.print(song_artist);
-            TFT.setCursor(64,92);
+            TFT.setCursor(100,92);
             TFT.print(song_album);
-            TFT.setCursor(64,136);
+            TFT.setCursor(100,136);
         }
         #endif
         paused_flag_array = paused_flag << 1; /** check this to ensure functionality **///update previously paused flag. 
