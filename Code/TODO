@@ -1,8 +1,7 @@
 Check conditions w/ strcmp
-Change RN52getMetadata so that it edits class variables, title/songname etc all pull from these class variables to
-    save on some of the overhead in constant transactions w/ the RN52. Need to then run getMetadata once per loop 
-    rather than ~6 times.
 Check TFT/Touch code
-Cut out irrelevant parts of font code
 Change makefile to add headers dynamically
 Sort out outsized strings for display
+Fix framerate of numerical update
+Make actual buttons for the stuff at the bottom
+Fix paused flag - the RN52 code isnt "clean" for whatever reason, so hardcode the correct one
