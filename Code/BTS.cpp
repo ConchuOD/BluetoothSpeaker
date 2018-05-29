@@ -1,8 +1,8 @@
 /* Optional code segments - using this to seperately test code segments */
 
 #define DEBUG 1
-#define DISPLAY 1
-//#define HC05 1
+//define DISPLAY 1
+//define HC05 1
 
 /* Requried libraries */
 #include <HardwareSerial.h>
@@ -56,8 +56,8 @@ int main(void){
     char *s, *previousTimeOut;
     s = timeOut;
     strcpy(timeOut, "00:00/00:00");
-    String song_artist = "n/a", song_album = "n/a", song_title = "n/a";
-    String previous_album = "n/a", previous_title = "n/a", previous_artist = "n/a";
+    String song_artist = "", song_album = "", song_title = "";
+    String previous_album = "", previous_title = "", previous_artist = "";
     int song_duration = 0, current_duration = 0, previous_duration = 0;    //song_duration is current a string in RN52_HWSerial
     int start_time = 0, elapsed_time = 0, time_at_pause = 0;
     int duration_seconds = 0, duration_minutes = 0;
@@ -136,7 +136,6 @@ int main(void){
     TFT.print(" Album:");
     TFT.setCursor(10,136);
     TFT.print("  Time:");
-    delay(2000);
     TFT.setCursor(100,4);
     TFT.print(song_title);
     TFT.setCursor(100,48);
@@ -144,8 +143,7 @@ int main(void){
     TFT.setCursor(100,92);
     TFT.print(song_album);
     TFT.setCursor(100,136);
-    delay(10000);
-    sprintf(s,"%2.0d:%2.0d/%2.0d:%2.0d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
+    sprintf(s,"%02d:%02d/%02d:%02d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
     TFT.print(timeOut);
     #endif
     digitalWrite(PIN_SHUTDOWN, HIGH); // turn on PA after setup complete
@@ -339,7 +337,7 @@ int main(void){
         TFT.setTextColor(ILI9341_PINK);
         #endif
         previousTimeOut = timeOut;
-        sprintf(s,"%2d:%2d/%2d:%2d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
+        sprintf(s,"%02d:%02d/%02d:%02d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
         #ifdef DEBUG
         if(timeOut != previousTimeOut){
             Serial.println(timeOut);
