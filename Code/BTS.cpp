@@ -277,13 +277,11 @@ int main(void){
         **/
         /* Now get metadata information */
         /** CHECK THIS CONDITION ESP strcmp **/
-        #ifdef DEBUG
-        Serial.println(millis()%METADATA_RESET);
-        #endif
         if( (strcmp(timeOut, "00:00/00:00") == 0) || millis()%METADATA_RESET == 0 || new_song_flag){  //runs on startup, every n seconds and on changes 
             #ifdef DEBUG
             Serial.println("...");
             #endif
+            RN52_Serial3.getMetaData();
             previous_album = song_album;  //save the old versions of the text so that we can wipe screen
             song_album = RN52_Serial3.album();
             previous_title = song_title;
