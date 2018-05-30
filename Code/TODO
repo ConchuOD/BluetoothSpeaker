@@ -5,3 +5,4 @@ Sort out outsized strings for display
 Fix framerate of numerical update
 Make actual buttons for the stuff at the bottom
 Fix paused flag - the RN52 code isnt "clean" for whatever reason, so hardcode the correct one
+Dont print "?"s

@@ -35,6 +35,7 @@
 #define GPIO2_PIN           17
 #define PIN_SHUTDOWN        2
 #define GPIO9_PIN           15
+#define STRING_DISP_LIMIT   17
 
 /* Globals */
 #ifdef DISPLAY
@@ -52,22 +53,23 @@ int main(void){
     #ifdef DEBUG
     int timer = 0;
     #endif
-    char c, timeOut[12];
-    char *s, *previousTimeOut;
+    char c, timeOut[12], previousTimeOut[12];
+    char *s;
     s = timeOut;
     strcpy(timeOut, "00:00/00:00");
+    strcpy(previousTimeOut, "00:00/00:00");
     String song_artist = "", song_album = "", song_title = "";
     String previous_album = "", previous_title = "", previous_artist = "";
     int song_duration = 0, current_duration = 0, previous_duration = 0;    //song_duration is current a string in RN52_HWSerial
     int start_time = 0, elapsed_time = 0, time_at_pause = 0;
     int duration_seconds = 0, duration_minutes = 0;
     int elapsed_seconds = 0, elapsed_minutes = 0;
-    int event_reg_status = 0;
+    uint16_t event_reg_status = 0, paused_event_mask = 0b00000010, new_event_mask = 0b0000100000000000;
     TS_Point touched_location;
     bool touched_flag = false;
     /** Insert code to deal with flags in metadata handling (reset in particular) **/
     bool new_song_flag = false, paused_flag = false, previous_paused_flag = false, event_bit5_flag = false, GPIO_2_status = true;
-    uint8_t paused_flag_array = 0; /** Implement this without bools **/
+    uint8_t paused_flag_array = 0, paused_flag_mask = 3; /** Implement this without bools **/
     /* Setup code */
     //setup();
     sei();  //enable interupts
@@ -258,14 +260,24 @@ int main(void){
             #ifdef DEBUG
             Serial.print("event_reg_status ");
             Serial.println(event_reg_status);
-
             #endif
-            if(event_reg_status == 11277){
+            if((event_reg_status & new_event_mask) >> 11){
                 new_song_flag = true;
                 #ifdef DEBUG
                 Serial.print("track event ");
-                Serial.println(event_reg_status & (1 << 5));
-                #endif
+                #endif 
+            }
+            if((event_reg_status & paused_event_mask) >> 1){
+                paused_flag = true;
+                #ifdef DEBUG
+                Serial.println("Paused");
+                #endif 
+            }
+            else{
+                paused_flag = false;
+                #ifdef DEBUG
+                Serial.println("Un-paused");
+                #endif 
             }
         }
         /** 
@@ -282,12 +294,15 @@ int main(void){
             RN52_Serial3.getMetaData();
             previous_album = song_album;  //save the old versions of the text so that we can wipe screen
             song_album = RN52_Serial3.album();
+            song_album.remove(STRING_DISP_LIMIT);
             previous_title = song_title;
             song_title = RN52_Serial3.trackTitle();  
+            song_title.remove(STRING_DISP_LIMIT);
             previous_artist = song_artist;            
-            song_artist = RN52_Serial3.artist();
+            song_artist = RN52_Serial3.artist();  
+            song_artist.remove(STRING_DISP_LIMIT);
             previous_duration = song_duration;         
-            song_duration = RN52_Serial3.trackDuration();
+            song_duration = RN52_Serial3.trackDuration();  
 
             if(song_title == "" || song_artist == ""){
                 new_song_flag = false; 
@@ -297,7 +312,9 @@ int main(void){
                 new_song_flag = true;
             } 
         }
-        paused_flag = new_song_flag ? false : paused_flag;    //reset paused flag if a new song is detected (default spotify behaviour).
+        if(new_song_flag && paused_flag){
+            new_song_flag = false;  //workaround
+        }
         /* Time update */
         if(new_song_flag){
             start_time = millis();
@@ -310,6 +327,12 @@ int main(void){
         duration_minutes = ((song_duration/1000)/60)%60;
         /* Account for the duration staying constant during a pause. Only for own pauses as AVRCP doesnt give pause data. */
         paused_flag_array |= paused_flag;
+        #ifdef DEBUG
+        if(paused_flag_array){
+            Serial.print("paused_flag_array: ");
+            Serial.println(paused_flag_array,BIN);
+        }
+        #endif
         switch(paused_flag_array){
                 case 0:  //keep increasing elapsed time
                     elapsed_time = millis() - start_time;
@@ -318,7 +341,7 @@ int main(void){
                     time_at_pause = millis();
                     break;                
                 case 2:  //compute new start time
-                    start_time = time_at_pause - elapsed_time;  //lol bodged
+                    start_time = millis() - elapsed_time;  //lol bodged
                     break;                
                 case 3:  //still paused
                     break;
@@ -336,16 +359,18 @@ int main(void){
         TFT.print(timeOut); //print the old time in black
         TFT.setTextColor(ILI9341_PINK);
         #endif
-        previousTimeOut = timeOut;
+        *previousTimeOut = *timeOut;
         sprintf(s,"%02d:%02d/%02d:%02d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
         #ifdef DEBUG
-        if(timeOut != previousTimeOut){
+        if(*timeOut != *previousTimeOut){
             Serial.println(timeOut);
         }
         #endif
         #ifdef DISPLAY
-        TFT.setCursor(100,136);
-        TFT.print(timeOut); //print the new time
+        //if(!strcmp(previousTimeOut, timeOut)){
+            TFT.setCursor(100,136);
+            TFT.print(timeOut); //print the new time
+        //}
         /* Metadata Update */
         if(new_song_flag){
             TFT.setTextColor(ILI9341_BLACK);
@@ -363,9 +388,10 @@ int main(void){
             TFT.setCursor(100,92);
             TFT.print(song_album);
             TFT.setCursor(100,136);
-        }
+        } 
         #endif
         paused_flag_array = paused_flag << 1; /** check this to ensure functionality **///update previously paused flag. 
+        paused_flag_array &= paused_flag_array;
         new_song_flag = false;    //reset new song flag
         touched_flag = false;
         //#ifdef DEBUG

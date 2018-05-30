@@ -116,6 +116,8 @@ $(TARGET).elf: $(OBJS) $(MCU_LD)
 ifneq (,$(wildcard $(TOOLSPATH)))
 	$(TOOLSPATH)/teensy_post_compile -file=$(basename $@) -path=$(shell pwd) -tools=$(TOOLSPATH)
 	-$(TOOLSPATH)/teensy_reboot
+	sleep 2
+	screen /dev/ttyACM0 115200
 endif
 
 # compiler generated dependency info
