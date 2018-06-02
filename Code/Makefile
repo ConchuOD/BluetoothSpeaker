@@ -123,6 +123,12 @@ endif
 # compiler generated dependency info
 -include $(OBJS:.o=.d)
 
+program:
+	$(TOOLSPATH)/teensy_post_compile -file=$(TARGET) -path=$(shell pwd) -tools=$(TOOLSPATH)
+	-$(TOOLSPATH)/teensy_reboot
+	sleep 2
+	screen /dev/ttyACM0 115200
+
 clean:
 	rm -f *.o *.d $(TARGET).elf $(TARGET).hex
 

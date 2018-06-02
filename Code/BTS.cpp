@@ -1,7 +1,7 @@
 /* Optional code segments - using this to seperately test code segments */
 
 #define DEBUG 1
-//define DISPLAY 1
+#define DISPLAY 1
 //define HC05 1
 
 /* Requried libraries */
@@ -12,7 +12,7 @@
 #include <WString.h>
 #include <Adafruit_STMPE610.h>
 
-/* Libraries that may be needed */ /** TODO - Figure out required headers (check arduino programmer code) **/
+/* Libraries that may be needed */
 #include <SPI.h>
 
 /* Definitions */
@@ -49,15 +49,10 @@ void shutdown(void); //write this function
 /** Finish Metadata related AT commands in HWSerial before using **/
 int main(void){
     /* Variables */
-    String test_len = "117";
     #ifdef DEBUG
     int timer = 0;
     #endif
     char c, timeOut[12], previousTimeOut[12];
-    char *s;
-    s = timeOut;
-    strcpy(timeOut, "00:00/00:00");
-    strcpy(previousTimeOut, "00:00/00:00");
     String song_artist = "", song_album = "", song_title = "";
     String previous_album = "", previous_title = "", previous_artist = "";
     int song_duration = 0, current_duration = 0, previous_duration = 0;    //song_duration is current a string in RN52_HWSerial
@@ -139,14 +134,6 @@ int main(void){
     TFT.setCursor(10,136);
     TFT.print("  Time:");
     TFT.setCursor(100,4);
-    TFT.print(song_title);
-    TFT.setCursor(100,48);
-    TFT.print(song_artist);
-    TFT.setCursor(100,92);
-    TFT.print(song_album);
-    TFT.setCursor(100,136);
-    sprintf(s,"%02d:%02d/%02d:%02d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
-    TFT.print(timeOut);
     #endif
     digitalWrite(PIN_SHUTDOWN, HIGH); // turn on PA after setup complete
     /* Operational code */
@@ -338,8 +325,7 @@ int main(void){
                     elapsed_time = millis() - start_time;
                     break;                
                 case 1:  //save the time it was paused at
-                    time_at_pause = millis();
-                    break;                
+                   break;                
                 case 2:  //compute new start time
                     start_time = millis() - elapsed_time;  //lol bodged
                     break;                
@@ -350,27 +336,20 @@ int main(void){
                     #ifdef DEBUG
                     Serial.println("Error");
                     #endif
-            }
+        }
         elapsed_seconds = (elapsed_time/1000)%60;
         elapsed_minutes = ((elapsed_time/1000)/60)%60;
-        #ifdef DISPLAY  
-        TFT.setTextColor(ILI9341_BLACK);        
-        TFT.setCursor(100,136);
-        TFT.print(timeOut); //print the old time in black
-        TFT.setTextColor(ILI9341_PINK);
-        #endif
-        *previousTimeOut = *timeOut;
-        sprintf(s,"%02d:%02d/%02d:%02d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
-        #ifdef DEBUG
-        if(*timeOut != *previousTimeOut){
-            Serial.println(timeOut);
-        }
-        #endif
+        strcpy(previousTimeOut,timeOut);
+        sprintf(timeOut,"%02d:%02d/%02d:%02d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
         #ifdef DISPLAY
-        //if(!strcmp(previousTimeOut, timeOut)){
+        if(strcmp(previousTimeOut,timeOut) != 0){ /** modify to only update the changed character **/
+            TFT.setTextColor(ILI9341_BLACK);        
+            TFT.setCursor(100,136);
+            TFT.print(previousTimeOut); //print the old time in black
+            TFT.setTextColor(ILI9341_PINK);
             TFT.setCursor(100,136);
             TFT.print(timeOut); //print the new time
-        //}
+        }
         /* Metadata Update */
         if(new_song_flag){
             TFT.setTextColor(ILI9341_BLACK);
