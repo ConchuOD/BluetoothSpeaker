@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="8.7.0">
+<eagle version="9.0.1">
 <drawing>
 <settings>
-<setting alwaysvectorfont="yes"/>
+<setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
@@ -18157,8 +18157,8 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <text x="45.72" y="106.68" size="1.778" layer="91">If using shenzen module layout DO NOT connect a Teensy. You will fry it as that layout supplies 3.6V to the BT module.</text>
 <text x="378.46" y="7.62" size="2.54" layer="97">v1.0</text>
 <text x="157.48" y="236.22" size="1.778" layer="91">(RESET)</text>
-<text x="160.02" y="215.9" size="1.778" layer="91">TMOSI</text>
-<text x="160.02" y="213.36" size="1.778" layer="91">TMISO</text>
+<text x="162.56" y="215.9" size="1.778" layer="91">TMOSI</text>
+<text x="162.56" y="213.36" size="1.778" layer="91">TMISO</text>
 <text x="45.72" y="104.14" size="1.778" layer="91">Maybe try to remove the LDO and power the BT module from the 3v3 layout - I dont know if this works as of yet.</text>
 <text x="142.24" y="254" size="1.778" layer="91">TFT</text>
 <text x="281.94" y="236.22" size="1.778" layer="91">POWER SUPPLIES</text>
@@ -18830,6 +18830,11 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <wire x1="35.56" y1="63.5" x2="38.1" y2="63.5" width="0.1524" layer="91"/>
 <label x="38.1" y="63.5" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="T3_2" gate="G$1" pin="15/A1/T"/>
+<wire x1="78.74" y1="139.7" x2="76.2" y2="139.7" width="0.1524" layer="91"/>
+<label x="73.66" y="139.7" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="GPIO10" class="0">
 <segment>
@@ -19443,13 +19448,6 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <label x="71.12" y="172.72" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="D15" class="0">
-<segment>
-<pinref part="T3_2" gate="G$1" pin="15/A1/T"/>
-<wire x1="78.74" y1="139.7" x2="76.2" y2="139.7" width="0.1524" layer="91"/>
-<label x="73.66" y="139.7" size="1.778" layer="95"/>
-</segment>
-</net>
 <net name="D19" class="0">
 <segment>
 <pinref part="T3_2" gate="G$1" pin="19/A5/T/SCL0"/>
@@ -19509,6 +19507,11 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <wire x1="76.2" y1="144.78" x2="78.74" y2="144.78" width="0.1524" layer="91"/>
 <label x="73.66" y="144.78" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="J4" gate="G$1" pin="5"/>
+<wire x1="149.86" y1="220.98" x2="152.4" y2="220.98" width="0.1524" layer="91"/>
+<label x="152.4" y="220.98" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="LED" class="0">
 <segment>
@@ -19536,13 +19539,6 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <pinref part="J4" gate="G$1" pin="2"/>
 <wire x1="149.86" y1="213.36" x2="152.4" y2="213.36" width="0.1524" layer="91"/>
 <label x="152.4" y="213.36" size="1.778" layer="95"/>
-</segment>
-</net>
-<net name="TCLK" class="0">
-<segment>
-<pinref part="J4" gate="G$1" pin="5"/>
-<wire x1="149.86" y1="220.98" x2="152.4" y2="220.98" width="0.1524" layer="91"/>
-<label x="152.4" y="220.98" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="TCS" class="0">
