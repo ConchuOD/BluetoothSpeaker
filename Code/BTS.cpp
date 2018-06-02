@@ -13,7 +13,7 @@
 #include <Adafruit_STMPE610.h>
 
 /* Buttons for the screen */
-#include "PauseButton.c"
+#include "Pictures.h"
 
 /* Libraries that may be needed */
 #include <SPI.h>
