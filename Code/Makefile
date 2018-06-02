@@ -66,8 +66,11 @@ TOOLSPATH = $(abspath /home/conor/arduino-1.8.5/hardware/tools)
 # Settings below this point usually do not need to be edited
 #************************************************************************
 
+CPPLIBS += $(foreach lib,$(EXTRALIBS),-I$(lib))
+
 # CPPFLAGS = compiler options for C and C++
-CPPFLAGS += -Wall -g -Os -mthumb -MMD $(OPTIONS) -I. -I$(COREPATH) -I$(COREPATH)/avr -IILI9341_t3 -ISPI -IRN52 -Itext -IAdafruit_STMPE610 -IWire
+CPPFLAGS += -Wall -g -Os -mthumb -MMD $(OPTIONS) -I. -I$(COREPATH) -I$(COREPATH)/avr $(CPPLIBS)
+
 
 # compiler options for C++ only
 CXXFLAGS += -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti

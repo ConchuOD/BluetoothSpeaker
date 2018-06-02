@@ -52,7 +52,7 @@ int main(void){
     #ifdef DEBUG
     int timer = 0;
     #endif
-    char c, timeOut[12], previousTimeOut[12];
+    char c, timeOut[12] = "", previousTimeOut[12] = "";
     String song_artist = "", song_album = "", song_title = "";
     String previous_album = "", previous_title = "", previous_artist = "";
     int song_duration = 0, current_duration = 0, previous_duration = 0;    //song_duration is current a string in RN52_HWSerial
@@ -115,7 +115,6 @@ int main(void){
     TFT.setTextSize(2);
     TFT.setFont(DroidSansMono_16);
     TFT.setRotation(3);
-    delay(2000);
     /** 
         Later these can be made into bitmaps of actual buttons?
     **/
@@ -190,8 +189,8 @@ int main(void){
                 #ifdef DEBUG
                 Serial.println("Volume increased.");
                 #endif    
-        }           
-    }
+            }           
+        }
         #endif
         #ifdef HC05
         /* Check for HC05 commands */
@@ -273,11 +272,7 @@ int main(void){
             On second thoughts, do I need this?
         **/
         /* Now get metadata information */
-        /** CHECK THIS CONDITION ESP strcmp **/
-        if( (strcmp(timeOut, "00:00/00:00") == 0) || millis()%METADATA_RESET == 0 || new_song_flag){  //runs on startup, every n seconds and on changes 
-            #ifdef DEBUG
-            Serial.println("...");
-            #endif
+        if( (strcmp(timeOut, "") == 0) || millis()%METADATA_RESET == 0 || new_song_flag){  //runs on startup, every n seconds and on changes 
             RN52_Serial3.getMetaData();
             previous_album = song_album;  //save the old versions of the text so that we can wipe screen
             song_album = RN52_Serial3.album();
@@ -299,9 +294,9 @@ int main(void){
                 new_song_flag = true;
             } 
         }
-        if(new_song_flag && paused_flag){
-            new_song_flag = false;  //workaround
-        }
+        //if(new_song_flag && paused_flag){
+        //    new_song_flag = false;  /** workaround, think no longer required? **/
+        //}
         /* Time update */
         if(new_song_flag){
             start_time = millis();
@@ -312,7 +307,6 @@ int main(void){
         }
         duration_seconds = (song_duration/1000)%60;
         duration_minutes = ((song_duration/1000)/60)%60;
-        /* Account for the duration staying constant during a pause. Only for own pauses as AVRCP doesnt give pause data. */
         paused_flag_array |= paused_flag;
         #ifdef DEBUG
         if(paused_flag_array){
@@ -336,7 +330,7 @@ int main(void){
                     #ifdef DEBUG
                     Serial.println("Error");
                     #endif
-        }
+        }        
         elapsed_seconds = (elapsed_time/1000)%60;
         elapsed_minutes = ((elapsed_time/1000)/60)%60;
         strcpy(previousTimeOut,timeOut);
@@ -369,9 +363,8 @@ int main(void){
             TFT.setCursor(100,136);
         } 
         #endif
-        paused_flag_array = paused_flag << 1; /** check this to ensure functionality **///update previously paused flag. 
-        paused_flag_array &= paused_flag_array;
-        new_song_flag = false;    //reset new song flag
+        paused_flag_array = (paused_flag << 1) & 0b11;	//update previously paused flag. 
+        new_song_flag = false;    //reset flags
         touched_flag = false;
         //#ifdef DEBUG
         //Serial.print("Loop time: ");

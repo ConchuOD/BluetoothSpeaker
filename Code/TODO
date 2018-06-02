@@ -1,6 +1,4 @@
-Check conditions w/ strcmp
-Check Touch code
-Change makefile to add headers dynamically
+Check Touch code - its a schematic error
 Sort out outsized strings for display - partly done
 Fix framerate of numerical update - partly done
-Make actual buttons for the stuff at the bottom
+Make actual buttons for the stuff at the bottom - bitmaps?
