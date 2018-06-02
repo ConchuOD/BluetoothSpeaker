@@ -12,6 +12,9 @@
 #include <WString.h>
 #include <Adafruit_STMPE610.h>
 
+/* Buttons for the screen */
+#include "PauseButton.c"
+
 /* Libraries that may be needed */
 #include <SPI.h>
 
@@ -120,7 +123,7 @@ int main(void){
     **/
     TFT.fillRect(0,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_BLUE);        //vol down
     TFT.fillRect(64,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_GREEN);      //previous
-    TFT.fillRect(128,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_RED);       //play/pause
+    TFT.writeRect(128,180,BUTTON_WIDTH,BUTTON_HEIGHT,(uint16_t*) PauseButton);       //play/pause
     TFT.fillRect(192,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_ORANGE);    //next
     TFT.fillRect(256,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_DARKCYAN);  //vol up
     /* Initialise the song display */

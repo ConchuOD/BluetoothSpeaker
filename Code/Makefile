@@ -67,6 +67,7 @@ TOOLSPATH = $(abspath /home/conor/arduino-1.8.5/hardware/tools)
 #************************************************************************
 
 CPPLIBS += $(foreach lib,$(EXTRALIBS),-I$(lib))
+CPPLIBS += $(abspath Pictures.c)
 
 # CPPFLAGS = compiler options for C and C++
 CPPFLAGS += -Wall -g -Os -mthumb -MMD $(OPTIONS) -I. -I$(COREPATH) -I$(COREPATH)/avr $(CPPLIBS)
