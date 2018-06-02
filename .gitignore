@@ -1,6 +1,7 @@
 # Other file types
 *.zip
 *.svg
+*.PNG
 
 # Executables
 *exe*
