@@ -15,9 +15,6 @@
 /* Buttons for the screen */
 #include "Pictures.h"
 
-/* Libraries that may be needed */
-#include <SPI.h>
-
 /* Definitions */
 #define TFT_DC      21
 #define TFT_CS      20
@@ -39,6 +36,7 @@
 #define PIN_SHUTDOWN        2
 #define GPIO9_PIN           15
 #define STRING_DISP_LIMIT   17
+#define TEXT_COLOUR CL(96,96,96)
 
 /* Globals */
 #ifdef DISPLAY
@@ -114,18 +112,18 @@ int main(void){
         #endif
     } 
     TFT.fillScreen(ILI9341_BLACK);
-    TFT.setTextColor(ILI9341_PINK);
+    TFT.setTextColor(TEXT_COLOUR);
     TFT.setTextSize(2);
     TFT.setFont(DroidSansMono_16);
     TFT.setRotation(3);
     /** 
         Later these can be made into bitmaps of actual buttons?
     **/
-    TFT.fillRect(0,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_BLUE);        //vol down
-    TFT.fillRect(64,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_GREEN);      //previous
+    TFT.writeRect(0,180,BUTTON_WIDTH,BUTTON_HEIGHT,(uint16_t*) MinusButton);        //vol down
+    TFT.writeRect(64,180,BUTTON_WIDTH,BUTTON_HEIGHT,(uint16_t*) PreviousButton);      //previous
     TFT.writeRect(128,180,BUTTON_WIDTH,BUTTON_HEIGHT,(uint16_t*) PauseButton);       //play/pause
-    TFT.fillRect(192,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_ORANGE);    //next
-    TFT.fillRect(256,180,BUTTON_WIDTH,BUTTON_HEIGHT,ILI9341_DARKCYAN);  //vol up
+    TFT.writeRect(192,180,BUTTON_WIDTH,BUTTON_HEIGHT,(uint16_t*) NextButton);    //next
+    TFT.writeRect(256,180,BUTTON_WIDTH,BUTTON_HEIGHT,(uint16_t*) PlusButton);  //vol up
     /* Initialise the song display */
     TFT.setCursor(10,4);
     TFT.print(" Title:");
@@ -311,28 +309,24 @@ int main(void){
         duration_seconds = (song_duration/1000)%60;
         duration_minutes = ((song_duration/1000)/60)%60;
         paused_flag_array |= paused_flag;
-        #ifdef DEBUG
-        if(paused_flag_array){
-            Serial.print("paused_flag_array: ");
-            Serial.println(paused_flag_array,BIN);
-        }
-        #endif
         switch(paused_flag_array){
-                case 0:  //keep increasing elapsed time
-                    elapsed_time = millis() - start_time;
-                    break;                
-                case 1:  //save the time it was paused at
-                   break;                
-                case 2:  //compute new start time
-                    start_time = millis() - elapsed_time;  //lol bodged
-                    break;                
-                case 3:  //still paused
-                    break;
-                default:
-                    shutdown();
-                    #ifdef DEBUG
-                    Serial.println("Error");
-                    #endif
+            case 0:  //keep increasing elapsed time
+                elapsed_time = millis() - start_time;
+                break;                
+            case 1:  //play button
+                TFT.writeRect(128,180,BUTTON_WIDTH,BUTTON_HEIGHT,(uint16_t*) PlayButton);
+                break;                
+            case 2:  //compute new start time
+                start_time = millis() - elapsed_time;  //lol bodged
+                TFT.writeRect(128,180,BUTTON_WIDTH,BUTTON_HEIGHT,(uint16_t*) PauseButton);       //play/pause
+                break;                
+            case 3:  //still paused
+                break;
+            default:
+                shutdown();
+                #ifdef DEBUG
+                Serial.println("Error");
+                #endif
         }        
         elapsed_seconds = (elapsed_time/1000)%60;
         elapsed_minutes = ((elapsed_time/1000)/60)%60;
@@ -343,7 +337,7 @@ int main(void){
             TFT.setTextColor(ILI9341_BLACK);        
             TFT.setCursor(100,136);
             TFT.print(previousTimeOut); //print the old time in black
-            TFT.setTextColor(ILI9341_PINK);
+            TFT.setTextColor(TEXT_COLOUR);
             TFT.setCursor(100,136);
             TFT.print(timeOut); //print the new time
         }
@@ -356,7 +350,7 @@ int main(void){
             TFT.print(previous_artist);
             TFT.setCursor(100,92);
             TFT.print(previous_album);            
-            TFT.setTextColor(ILI9341_PINK);
+            TFT.setTextColor(TEXT_COLOUR);
             TFT.setCursor(100,4);
             TFT.print(song_title);
             TFT.setCursor(100,48);
