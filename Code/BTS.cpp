@@ -40,8 +40,8 @@
 
 /* Globals */
 #ifdef DISPLAY
-Adafruit_STMPE610 TouchScreen = Adafruit_STMPE610(STMPE_CS);
 ILI9341_t3 TFT = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MISO);
+Adafruit_STMPE610 TouchScreen = Adafruit_STMPE610(STMPE_CS, TFT_MOSI, TFT_MISO, TFT_SCLK);
 #endif
 
 /* Function delarations */
@@ -105,12 +105,16 @@ int main(void){
     #endif
     #ifdef DISPLAY
     /* Setup the buttons on the display */
-    TFT.begin();
-    if (!TouchScreen.begin()){ 
+    TFT.begin();    //returns void
+    #ifdef DEBUG
+    Serial.println("Started display");
+    #endif
+    if(!TouchScreen.begin()){
         #ifdef DEBUG
-        Serial.println("Unable to start touchscreen.");
+        Serial.println("Failed to start touchscreen.");
         #endif
-    } 
+    }
+    delay(1000); 
     TFT.fillScreen(ILI9341_BLACK);
     TFT.setTextColor(TEXT_COLOUR);
     TFT.setTextSize(2);
