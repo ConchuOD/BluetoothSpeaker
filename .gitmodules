@@ -10,6 +10,6 @@
 [submodule "Code/cores"]
 	path = Code/cores
 	url = https://github.com/PaulStoffregen/cores
-[submodule "Code/Adafruit_STMPE610"]
-	path = Code/Adafruit_STMPE610
-	url = https://github.com/adafruit/Adafruit_STMPE610
+[submodule "Code/XPT2046"]
+	path = Code/XPT2046
+	url = https://github.com/PaulStoffregen/XPT2046_Touchscreen

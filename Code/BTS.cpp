@@ -22,7 +22,8 @@
 #define TFT_MOSI    11
 #define TFT_SCLK    13
 #define TFT_MISO    12
-#define STMPE_CS    22
+#define TOUCH_CS    22
+#define TOUCH_IRQ   23
 #define TS_MINX     150
 #define TS_MINY     130
 #define TS_MAXX     3800
@@ -41,7 +42,7 @@
 /* Globals */
 #ifdef DISPLAY
 ILI9341_t3 TFT = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MISO);
-Adafruit_STMPE610 TouchScreen = Adafruit_STMPE610(STMPE_CS, TFT_MOSI, TFT_MISO, TFT_SCLK);
+XPT2046_Touchscreen TouchScreen(TOUCH_CS, TOUCH_IRQ);
 #endif
 
 /* Function delarations */
