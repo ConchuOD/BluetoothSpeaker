@@ -351,9 +351,13 @@ int main(void){
         if(new_song_flag){
             TFT.setTextColor(ILI9341_BLACK);
             TFT.setCursor(100,4);
+            TFT.print("?");
+            TFT.setCursor(100,4);
             TFT.print(previous_title);
             TFT.setCursor(100,48);
             TFT.print(previous_artist);
+            TFT.setCursor(100,92);
+            TFT.print("?");
             TFT.setCursor(100,92);
             TFT.print(previous_album);            
             TFT.setTextColor(TEXT_COLOUR);
@@ -368,7 +372,7 @@ int main(void){
         #endif
         paused_flag_array = (paused_flag << 1) & 0b11;	//update previously paused flag. 
         new_song_flag = false;    //reset flags
-        touched_flag_array = (touched_flag_array << 1) | touched_flag;
+        touched_flag_array = (touched_flag_array << 1);
         //#ifdef DEBUG
         //Serial.print("Loop time: ");
         //Serial.println(millis() - timer);
