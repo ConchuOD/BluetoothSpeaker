@@ -10,7 +10,7 @@
 #include <font_DroidSansMono.h>
 #include <RN52_HardwareSerial.h>
 #include <WString.h>
-#include <Adafruit_STMPE610.h>
+#include <XPT2046_Touchscreen.h>
 
 /* Buttons for the screen */
 #include "Pictures.h"
@@ -24,10 +24,10 @@
 #define TFT_MISO    12
 #define TOUCH_CS    22
 #define TOUCH_IRQ   23
-#define TS_MINX     150
-#define TS_MINY     130
-#define TS_MAXX     3800
-#define TS_MAXY     4000
+#define TS_MINX     300
+#define TS_MINY     220
+#define TS_MAXX     4000
+#define TS_MAXY     3900
 #define SERIAL_BAUD_RATE    115200
 #define RN52_BAUD_RATE      115200
 #define BUTTON_HEIGHT       60
@@ -63,7 +63,7 @@ int main(void){
     int elapsed_seconds = 0, elapsed_minutes = 0;
     uint16_t event_reg_status = 0, paused_event_mask = 0b00000010, new_event_mask = 0b0000100000000000;
     TS_Point touched_location;
-    bool touched_flag = false;
+    uint8_t touched_flag_array = 0;
     /** Insert code to deal with flags in metadata handling (reset in particular) **/
     bool new_song_flag = false, paused_flag = false, previous_paused_flag = false, event_bit5_flag = false, GPIO_2_status = true;
     uint8_t paused_flag_array = 0, paused_flag_mask = 3; /** Implement this without bools **/
@@ -121,6 +121,7 @@ int main(void){
     TFT.setTextSize(2);
     TFT.setFont(DroidSansMono_16);
     TFT.setRotation(3);
+    TouchScreen.setRotation(1);
     /** 
         Later these can be made into bitmaps of actual buttons?
     **/
@@ -148,54 +149,54 @@ int main(void){
         timer = millis();
         #endif
         #ifdef DISPLAY
-        if (!TouchScreen.bufferEmpty()){   
-            touched_flag = true;
-            touched_location = TouchScreen.getPoint(); 
-            touched_location.x = map(touched_location.x, TS_MINY, TS_MAXY, 0, TFT.height());
-            touched_location.y = map(touched_location.y, TS_MINX, TS_MAXX, 0, TFT.width());
-            #ifdef DEBUG
-            Serial.print("X coord =");
-            Serial.println(touched_location.x);
-            Serial.print("Y coord =");
-            Serial.println(touched_location.y);
-            #endif
-        }
-        if(touched_flag){
-            if(touched_location.x < 64 && touched_location.y > 180){
-                RN52_Serial3.volumeDown();
+        touched_flag_array |= (bool) TouchScreen.touched();
+        if(touched_flag_array & 0b1){
+            if(!(touched_flag_array & 0b11111110)){
+                touched_location = TouchScreen.getPoint(); 
+
+
                 #ifdef DEBUG
-                Serial.println("Volume decreased.");
+                Serial.print("X coord =");
+                Serial.println(touched_location.x);
+                Serial.print("Y coord =");
+                Serial.println(touched_location.y);
                 #endif
+                if(touched_location.x < 960 && touched_location.y > 2900){
+                    RN52_Serial3.volumeDown();
+                    #ifdef DEBUG
+                    Serial.println("Volume decreased.");
+                    #endif
+                }
+                else if(touched_location.x < 1720 && touched_location.y > 2900){
+                    RN52_Serial3.prevTrack();    //previous
+                    new_song_flag = true;
+                    paused_flag = false;
+                    #ifdef DEBUG
+                    Serial.println("Song rewound.");
+                    #endif
+                }
+                else if(touched_location.x < 2480 && touched_location.y > 2900){
+                    RN52_Serial3.playPause();    //pause
+                    paused_flag = paused_flag ? false : true; //toggle paused flag
+                    #ifdef DEBUG
+                    Serial.println("Paused.");
+                    #endif
+                }
+                else if(touched_location.x < 3240 && touched_location.y > 2900){
+                    RN52_Serial3.nextTrack();    //skip
+                    new_song_flag = true;
+                    paused_flag = false;
+                    #ifdef DEBUG
+                    Serial.println("Song skipped.");
+                    #endif
+                }
+                else if(touched_location.x > 3240){
+                    RN52_Serial3.volumeUp();    //volUp
+                    #ifdef DEBUG
+                    Serial.println("Volume increased.");
+                    #endif    
+                }           
             }
-            else if(touched_location.x < 128 && touched_location.y > 180){
-                RN52_Serial3.prevTrack();    //previous
-                new_song_flag = true;
-                paused_flag = false;
-                #ifdef DEBUG
-                Serial.println("Song rewound.");
-                #endif
-            }
-            else if(touched_location.x < 192 && touched_location.y > 180){
-                RN52_Serial3.playPause();    //pause
-                paused_flag = paused_flag ? false : true; //toggle paused flag
-                #ifdef DEBUG
-                Serial.println("Paused.");
-                #endif
-            }
-            else if(touched_location.x < 256 && touched_location.y > 180){
-                RN52_Serial3.nextTrack();    //skip
-                new_song_flag = true;
-                paused_flag = false;
-                #ifdef DEBUG
-                Serial.println("Song skipped.");
-                #endif
-            }
-            else if(touched_location.y > 180){
-                RN52_Serial3.volumeUp();    //volUp
-                #ifdef DEBUG
-                Serial.println("Volume increased.");
-                #endif    
-            }           
         }
         #endif
         #ifdef HC05
@@ -367,7 +368,7 @@ int main(void){
         #endif
         paused_flag_array = (paused_flag << 1) & 0b11;	//update previously paused flag. 
         new_song_flag = false;    //reset flags
-        touched_flag = false;
+        touched_flag_array = (touched_flag_array << 1) | touched_flag;
         //#ifdef DEBUG
         //Serial.print("Loop time: ");
         //Serial.println(millis() - timer);
