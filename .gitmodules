@@ -11,5 +11,5 @@
 	path = Code/cores
 	url = https://github.com/PaulStoffregen/cores
 [submodule "Code/XPT2046"]
-	path = Code/XPT2046
+	path = Code/XPT2046_Touchscreen
 	url = https://github.com/PaulStoffregen/XPT2046_Touchscreen
