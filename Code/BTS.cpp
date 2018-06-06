@@ -54,21 +54,19 @@ int main(void){
     #ifdef DEBUG
     int timer = 0;
     #endif
-    char c, timeOut[12] = "", previousTimeOut[12] = "";
+    char c, time_out[12] = "", previous_time_out[12] = "";
     String song_artist = "", song_album = "", song_title = "";
     String previous_album = "", previous_title = "", previous_artist = "";
-    int song_duration = 0, current_duration = 0, previous_duration = 0;    //song_duration is current a string in RN52_HWSerial
-    int start_time = 0, elapsed_time = 0, time_at_pause = 0;
+    int song_duration = 0;
+    int start_time = 0, elapsed_time = 0;
     int duration_seconds = 0, duration_minutes = 0;
     int elapsed_seconds = 0, elapsed_minutes = 0;
     uint16_t event_reg_status = 0, paused_event_mask = 0b00000010, new_event_mask = 0b0000100000000000;
     TS_Point touched_location;
     uint8_t touched_flag_array = 0;
-    /** Insert code to deal with flags in metadata handling (reset in particular) **/
-    bool new_song_flag = false, paused_flag = false, previous_paused_flag = false, event_bit5_flag = false, GPIO_2_status = true;
-    uint8_t paused_flag_array = 0, paused_flag_mask = 3; /** Implement this without bools **/
+    bool new_song_flag = false, GPIO_2_status = true;
+    uint8_t paused_flag_array = 0, paused_flag_mask = 3;
     /* Setup code */
-    //setup();
     sei();  //enable interupts
     pinMode(GPIO9_PIN, OUTPUT);    //pin for command mode
     digitalWrite(GPIO9_PIN, HIGH);
@@ -170,14 +168,14 @@ int main(void){
                 else if(touched_location.x < 1720 && touched_location.y > 2900){
                     RN52_Serial3.prevTrack();    //previous
                     new_song_flag = true;
-                    paused_flag = false;
+                    paused_flag_array |= false;;
                     #ifdef DEBUG
                     Serial.println("Song rewound.");
                     #endif
                 }
                 else if(touched_location.x < 2480 && touched_location.y > 2900){
                     RN52_Serial3.playPause();    //pause
-                    paused_flag = paused_flag ? false : true; //toggle paused flag
+                    paused_flag_array |= ((paused_flag_array >> 1) & 0b1) ? false : true; //toggle paused flag
                     #ifdef DEBUG
                     Serial.println("Paused.");
                     #endif
@@ -185,7 +183,7 @@ int main(void){
                 else if(touched_location.x < 3240 && touched_location.y > 2900){
                     RN52_Serial3.nextTrack();    //skip
                     new_song_flag = true;
-                    paused_flag = false;
+                    paused_flag_array |= false;;
                     #ifdef DEBUG
                     Serial.println("Song skipped.");
                     #endif
@@ -226,7 +224,7 @@ int main(void){
                 case '>':
                     RN52_Serial3.nextTrack();    //skip
                     new_song_flag = true;
-                    paused_flag = false;
+                    paused_flag_array |= false;;
                     #ifdef DEBUG
                     Serial.println("Song skipped.");
                     #endif
@@ -234,7 +232,7 @@ int main(void){
                 case '<':
                     RN52_Serial3.prevTrack();    //previous
                     new_song_flag = true;
-                    paused_flag = false;
+                    paused_flag_array |= false;;
                     #ifdef DEBUG
                     Serial.println("Song rewound.");
                     #endif
@@ -261,13 +259,13 @@ int main(void){
                 #endif 
             }
             if((event_reg_status & paused_event_mask) >> 1){
-                paused_flag = true;
+                paused_flag_array |= true;;
                 #ifdef DEBUG
                 Serial.println("Paused");
                 #endif 
             }
             else{
-                paused_flag = false;
+                paused_flag_array |= false;;
                 #ifdef DEBUG
                 Serial.println("Un-paused");
                 #endif 
@@ -279,7 +277,7 @@ int main(void){
             On second thoughts, do I need this?
         **/
         /* Now get metadata information */
-        if( (strcmp(timeOut, "") == 0) || millis()%METADATA_RESET == 0 || new_song_flag){  //runs on startup, every n seconds and on changes 
+        if( (strcmp(time_out, "") == 0) || millis()%METADATA_RESET == 0 || new_song_flag){  //runs on startup, every n seconds and on changes 
             RN52_Serial3.getMetaData();
             previous_album = song_album;  //save the old versions of the text so that we can wipe screen
             song_album = RN52_Serial3.album();
@@ -290,7 +288,6 @@ int main(void){
             previous_artist = song_artist;            
             song_artist = RN52_Serial3.artist();  
             song_artist.remove(STRING_DISP_LIMIT);
-            previous_duration = song_duration;         
             song_duration = RN52_Serial3.trackDuration();  
 
             if(song_title == "" || song_artist == ""){
@@ -314,7 +311,7 @@ int main(void){
         }
         duration_seconds = (song_duration/1000)%60;
         duration_minutes = ((song_duration/1000)/60)%60;
-        paused_flag_array |= paused_flag;
+//        paused_flag_array |= paused_flag;
         switch(paused_flag_array){
             case 0:  //keep increasing elapsed time
                 elapsed_time = millis() - start_time;
@@ -336,16 +333,16 @@ int main(void){
         }        
         elapsed_seconds = (elapsed_time/1000)%60;
         elapsed_minutes = ((elapsed_time/1000)/60)%60;
-        strcpy(previousTimeOut,timeOut);
-        sprintf(timeOut,"%02d:%02d/%02d:%02d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
+        strcpy(previous_time_out,time_out);
+        sprintf(time_out,"%02d:%02d/%02d:%02d", elapsed_minutes, elapsed_seconds, duration_minutes, duration_seconds);
         #ifdef DISPLAY
-        if(strcmp(previousTimeOut,timeOut) != 0){ /** modify to only update the changed character **/
+        if(strcmp(previous_time_out,time_out) != 0){ /** modify to only update the changed character **/
             TFT.setTextColor(ILI9341_BLACK);        
             TFT.setCursor(100,136);
-            TFT.print(previousTimeOut); //print the old time in black
+            TFT.print(previous_time_out); //print the old time in black
             TFT.setTextColor(TEXT_COLOUR);
             TFT.setCursor(100,136);
-            TFT.print(timeOut); //print the new time
+            TFT.print(time_out); //print the new time
         }
         /* Metadata Update */
         if(new_song_flag){
@@ -370,7 +367,7 @@ int main(void){
             TFT.setCursor(100,136);
         } 
         #endif
-        paused_flag_array = (paused_flag << 1) & 0b11;	//update previously paused flag. 
+        paused_flag_array = (paused_flag_array << 1) & paused_flag_mask;	//update previously paused flag. 
         new_song_flag = false;    //reset flags
         touched_flag_array = (touched_flag_array << 1);
         //#ifdef DEBUG
