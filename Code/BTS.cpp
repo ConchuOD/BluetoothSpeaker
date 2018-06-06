@@ -1,6 +1,6 @@
 /* Optional code segments - using this to seperately test code segments */
 
-#define DEBUG 1
+//#define DEBUG 1
 #define DISPLAY 1
 //define HC05 1
 
