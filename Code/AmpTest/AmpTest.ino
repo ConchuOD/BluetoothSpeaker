@@ -6,9 +6,9 @@ void setup() {
     unsigned long initTime;
     unsigned long elapsedTime;
     //RN52_Serial3 object is instantiated globally in library.
-    pinMode(PIN_A0, OUTPUT);
+    pinMode(15, OUTPUT);
     pinMode(PIN_SHUTDOWN, OUTPUT);
-    digitalWrite(PIN_A0, HIGH);
+    digitalWrite(15, HIGH);
     digitalWrite(PIN_SHUTDOWN, LOW);
     Serial.begin(115200);
     while (!Serial){}
@@ -16,7 +16,7 @@ void setup() {
     RN52_Serial3.begin(115200);
     delay(1000);
     Serial.println("Running RN52 setup:");
-    digitalWrite(PIN_A0, LOW);  //drive low to init command mode
+    digitalWrite(15, LOW);  //drive low to init command mode
     while (RN52_Serial3.available() == 0){}  //wait for ACK (AOK\r\n or AOK\n\r, I forget which)
     Serial.println("Recieved something.");
     c = RN52_Serial3.read();
@@ -37,7 +37,7 @@ void setup() {
     RN52_Serial3.volumeUp();
     RN52_Serial3.volumeUp();
 
-    Serial.println(RN52_Serial3.getMetaData());
+    RN52_Serial3.getMetaData();
     Serial.println(RN52_Serial3.trackDuration());
     Serial.println("Running PA init:");
     digitalWrite(PIN_SHUTDOWN, HIGH);
