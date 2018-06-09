@@ -1,7 +1,7 @@
-# BTS - unfinished                 
-The v1.0 board has been made to work, albeit with a couple of modifications.
-The v2.0 board currently works for BT interactions, and the display. Touch isn't working yet, amp is untested however *should* work.
-Hopefully 
+# Teensy Bluetooth Speaker           
+This repo houses the hardware and code for a bluetooth speaker. It uses an [RN52 from Roving Networks](https://www.microchip.com/wwwproducts/en/RN52) on one daughterboard to provide the bluetooth streaming capabilities and a [Teensy3.2 from PJRC](https://www.pjrc.com/store/teensy32.html) on another to control operation and power a [touchscreen display](https://www.pjrc.com/store/display_ili9341_touch.html) which displays the song metadata as well as houses AVRCP buttons.
+The amplification is provided by a [TI 20 Watt Class-D amplifier](http://www.ti.com/lit/ds/symlink/tpa3140d2.pdf). Power comes from a 3S LiPo battery I had lying around from a RC project, with the amp being powered from 10.5 volts & seperate 3.3V rail for the RN52/Teensy/Display.
 
-This repo houses the hardware and code for a bluetooth speaker. It uses an RN52 from Roving Networks on one daughterboard to provide the bluetooth streaming capabilities and a Teensy3.2 from PJRC on another to control operation and power the touchscreen display.
-The amplification is provided by a TI 20 Watt Class-D amplifier. An ADI switching controller provides the 3.3 Volt rail and an ON semi "LDO" provides ~10.5 Volts to power the amplifier. The power supply is a 3S LiPo battery I had lying around from a RC project.
+The V1 board only worked after a number of modifications were made. These modifications were echoed in V2 which also introduced the display. A V3 is planned which will place the RN52 directly on the board itself. As the RN52 is relatively expensive the V1/V2 boards were created with the option to use a cheap Chinese A2DP module which required swapping the ADP2370 for an adjustable version as well as inserting some zero Ohm links. An approximate BOM is included as a spreadsheet, however the pricing in the first section is all rather approximate.
+
+*>insert photos of display, board & enclosure when complete*
