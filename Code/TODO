@@ -1,2 +1,3 @@
+Implement voltage sense line to prevent overdischarge of battery.
 Sort out outsized strings for display - partly done
 Fix framerate of numerical update - partly done

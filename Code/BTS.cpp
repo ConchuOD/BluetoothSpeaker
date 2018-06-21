@@ -34,10 +34,13 @@
 #define BUTTON_WIDTH        64
 #define METADATA_RESET      100
 #define GPIO2_PIN           17
-#define PIN_SHUTDOWN        2
 #define GPIO9_PIN           15
+#define PIN_SHUTDOWN        2
+#define PIN_SENSE           14
+#define LOW_VOLTAGE_CUTOFF  488 //3.3*3 (battery) *68/420 (sense) *1024/3.3 (ADC)
 #define STRING_DISP_LIMIT   17
 #define TEXT_COLOUR CL(96,96,96)
+
 
 /* Globals */
 #ifdef DISPLAY
@@ -71,6 +74,7 @@ int main(void){
     pinMode(GPIO9_PIN, OUTPUT);    //pin for command mode
     digitalWrite(GPIO9_PIN, HIGH);
     pinMode(GPIO2_PIN, INPUT); //pin for event register
+    pinMode(PIN_SENSE, INPUT);    //pin for low voltage cutoff
     pinMode(PIN_SHUTDOWN, OUTPUT);  //pin for PA enable
     digitalWrite(PIN_SHUTDOWN, LOW);
     delay(1000);    //wait before setup
@@ -142,6 +146,14 @@ int main(void){
     digitalWrite(PIN_SHUTDOWN, HIGH); // turn on PA after setup complete
     /* Operational code */
     for(;;){
+        if(analogRead(PIN_SENSE) < 488){
+            TFT.fillScreen(ILI9341_BLACK);
+            TFT.setCursor(10,4);
+            TFT.print("LVC SHUTDOWN");
+            TFT.setCursor(10,48);
+            TFT.print("CHARGE BATTERY TO CONTINUE");
+            shutdown();
+        }
         #ifdef DEBUG
         delay(50);
         timer = millis();
